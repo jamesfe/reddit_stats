@@ -1,0 +1,7 @@
+data/
+notes/
+*.swp
+*.swo
+*.json
+test_data/
+
