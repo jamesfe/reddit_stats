@@ -2,11 +2,12 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"compress/gzip"
 	"encoding/json"
-	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/op/go-logging"
 )
@@ -21,12 +22,30 @@ var (
 	inFile string
 )
 
+func newSimpleAnalysisResult() SimpleAnalysisResult {
+	return (SimpleAnalysisResult{TotalMatches: 0, TotalFirstMatches: 0, TotalLinesChecked: 0})
+}
+
+type SimpleAnalysisResult struct {
+	TotalMatches      int
+	TotalFirstMatches int
+	TotalLinesChecked int
+}
+
+type SimpleAnalysisParameter struct {
+	LinesToCheck             int  // Max number of lines per file to check
+	CheckLines               bool // even check them?
+	LineIntervalNotification int  // How many lines between print statements?
+	LogLineNotification      bool // whether or not to print notifications at line vals
+	Filename                 string
+}
+
 type Comment struct {
 	Author string `json:"author"`
 	// Author_flair_css_class string `json:"author_flair_css_class "`
 	// Author_flair_text      string `json:"author_flair_text"`
-	Body             string `json:"body"`
-	Controversiality int    `json:"controversiality"`
+	// Body             string `json:"body"`
+	Controversiality int `json:"controversiality"`
 	// Created_utc      string `json:"created_utc"`
 	// distinguished - mosty null
 	// Edited       string `json:"edited"`
@@ -41,8 +60,11 @@ type Comment struct {
 	// Ups          int    `json:"ups"`
 }
 
+var donaldSubreddit string = "t5_38unr"
+var donaldBytes []byte = []byte(donaldSubreddit)
+
 func isDonaldLite(data []byte) bool {
-	if strings.Contains(strings.ToLower(string(data)), "t5_38unr") { //t5_2qh3l  // t5_38unr
+	if bytes.Contains(data, donaldBytes) {
 		return true
 	}
 	return false
@@ -53,6 +75,7 @@ func isDonaldCertainly(comment Comment) bool {
 }
 
 func getFileReader(filename string) (*bufio.Reader, func() error) {
+	/* Opens the file (appropriately, gz or not) and returns a reader. */
 	f, err := os.Open(inFile)
 	if err != nil {
 		log.Debug("open")
@@ -76,6 +99,60 @@ func getFileReader(filename string) (*bufio.Reader, func() error) {
 	}
 }
 
+func SimpleFileAnalysis(parameters SimpleAnalysisParameter) (SimpleAnalysisResult, error) {
+	/* Opens the file, reads it, counts some things up and returns a set of results.  */
+	inFileReader, f := getFileReader(inFile)
+	defer f()
+	results := newSimpleAnalysisResult()
+
+	for {
+		var v Comment
+		var stuff, err = inFileReader.ReadBytes('\n')
+		if err != nil {
+			log.Warningf("%d, %d (initial, final) lines matched out of %d", results.TotalFirstMatches, results.TotalMatches, results.TotalLinesChecked)
+			return results, err
+		}
+		if (parameters.CheckLines) && (results.TotalLinesChecked >= parameters.LinesToCheck) {
+			log.Errorf("Max lines of %d exceeded: %d", parameters.LinesToCheck, results.TotalLinesChecked)
+			return results, nil
+		}
+		if isDonaldLite(stuff) {
+			results.TotalFirstMatches += 1
+			newerr := json.Unmarshal(stuff, &v)
+
+			if newerr == nil && isDonaldCertainly(v) {
+				results.TotalMatches += 1
+			} else {
+				return results, newerr
+			}
+		}
+		if parameters.LogLineNotification && results.TotalLinesChecked%parameters.LineIntervalNotification == 0 {
+			log.Debugf("Read %d lines", results.TotalLinesChecked)
+		}
+		results.TotalLinesChecked++
+	}
+	return results, nil
+}
+
+type UniqueAuthorsPerDayResult struct {
+	AuthorsPerDay map[time.Time]int
+	StartDate     time.Time
+	EndDate       time.Time
+}
+
+func New() *UniqueAuthorsPerDayResult {
+	retVal := new(UniqueAuthorsPerDayResult)
+	retVal.AuthorsPerDay = map[time.Time]int{}
+	return retVal
+}
+
+func UniqueAuthorsPerDayAnalysis(parameters SimpleAnalysisParameter) (UniqueAuthorsPerDayResult, error) {
+	results := New()
+	log.Warningf("%#v", results)
+
+	return *results, nil
+}
+
 func main() {
 	filename := flag.String("filename", "", "input filename")
 	sizeCheck := flag.Int("cv", 1000000, "check value")
@@ -83,47 +160,32 @@ func main() {
 	flag.Parse()
 	inFile = *filename
 
-	maxLinesVal := uint32(*maxLines)
-	sizeCheckVal := uint32(*sizeCheck)
 	log.Debug("reading " + inFile)
 
-	inFileReader, f := getFileReader(inFile)
-	defer f()
-
-	// now we read it, line by line in json
-	var totalLines uint32 = 0
-	var totalMatches int = 0
-	var totalFirstMatches int = 0
-
-	for {
-		var v Comment
-		var stuff, err = inFileReader.ReadBytes('\n')
-		// fmt.Printf("%v", stuff)
-		if err != nil {
-			fmt.Printf("%d, %d (initial, final) lines matched out of %d", totalFirstMatches, totalMatches, totalLines)
-			log.Fatal("READLINE: ", err)
-		}
-		totalLines++
-		if (maxLinesVal != 0) && (totalLines >= maxLinesVal) {
-			log.Errorf("Max lines of %d exceeded: %d", maxLinesVal, totalLines)
-			break
-		}
-		if totalLines%sizeCheckVal == 0 {
-			log.Debugf("Read %d lines", totalLines)
-		}
-		// if strings.Contains(strings.ToLower(string(stuff)), "the_donald") {
-		if isDonaldLite(stuff) {
-			newerr := json.Unmarshal(stuff, &v)
-
-			if newerr == nil {
-				if isDonaldCertainly(v) {
-					totalMatches += 1
-				}
-			} else {
-				log.Fatal(newerr)
-			}
-
-		}
+	var simpleParams SimpleAnalysisParameter
+	simpleParams.Filename = inFile
+	simpleParams.LinesToCheck = *maxLines
+	if simpleParams.LinesToCheck == 0 {
+		simpleParams.CheckLines = false
+	} else {
+		simpleParams.CheckLines = true
 	}
-	fmt.Printf("%d, %d (initial, final) lines matched out of %d", totalFirstMatches, totalMatches, totalLines)
+	simpleParams.LineIntervalNotification = *sizeCheck
+	if simpleParams.LineIntervalNotification == -1 {
+		simpleParams.LogLineNotification = false
+	} else {
+		simpleParams.LogLineNotification = true
+	}
+	/*
+		var simpleResults, err = SimpleFileAnalysis(simpleParams)
+		if err == nil {
+			log.Infof("%#v", simpleResults)
+		}
+	*/
+
+	var authorsPerDay, err = UniqueAuthorsPerDayAnalysis(simpleParams)
+	if err == nil {
+		log.Infof("UniqueAuthors: %#v", authorsPerDay)
+	}
+
 }
