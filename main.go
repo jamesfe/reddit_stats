@@ -174,16 +174,18 @@ func UniqueAuthorsPerDayAnalysis(parameters SimpleAnalysisParameter) (UniqueAuth
 
 	AuthPerDay := map[int]map[string]bool{}
 	var secondsPerDay int = 60 * 60 * 24
-
+	var looperr error
 	for {
 		var stuff, err = inFileReader.ReadBytes('\n')
 		if err != nil {
 			log.Warningf("%d, %d (initial, final) lines matched out of %d", simpleRes.TotalFirstMatches, simpleRes.TotalMatches, simpleRes.TotalLinesChecked)
-			return *results, err
+			looperr = err
+			break
 		}
 		if (parameters.CheckLines) && (simpleRes.TotalLinesChecked >= parameters.LinesToCheck) {
 			log.Errorf("Max lines of %d exceeded: %d", parameters.LinesToCheck, simpleRes.TotalLinesChecked)
-			return *results, nil
+			looperr = nil
+			break
 		}
 		if isDonaldLite(stuff) {
 			simpleRes.TotalFirstMatches += 1
@@ -197,14 +199,17 @@ func UniqueAuthorsPerDayAnalysis(parameters SimpleAnalysisParameter) (UniqueAuth
 				if he is, we do nothing
 				otherwise we add him to the list
 				*/
+
+				// TODO: Is this really the donald?
+
 				v := rawJsonMap.(map[string]interface{})
 				author := v["author"].(string)
 				realTime := getIntTimestamp(v["created_utc"])
 				if realTime == 0 { // if it is junk, go on
 					continue
 				}
-				var extraSeconds int = int(realTime) % secondsPerDay
-				var dateInSeconds int = extraSeconds / secondsPerDay // should be the same number for every day
+				var extraSeconds int = realTime % secondsPerDay
+				var dateInSeconds int = (realTime - extraSeconds) / secondsPerDay // should be the same number for every day
 
 				if AuthPerDay[dateInSeconds] == nil {
 					AuthPerDay[dateInSeconds] = make(map[string]bool)
@@ -212,11 +217,11 @@ func UniqueAuthorsPerDayAnalysis(parameters SimpleAnalysisParameter) (UniqueAuth
 				if !AuthPerDay[dateInSeconds][author] {
 					AuthPerDay[dateInSeconds][author] = true
 				}
-
 				simpleRes.TotalMatches += 1
 			} else {
 				log.Errorf("JSON Parsing Error: %s", newerr)
-				return *results, newerr
+				looperr = newerr
+				break
 			}
 		}
 		if parameters.LogLineNotification && simpleRes.TotalLinesChecked%parameters.LineIntervalNotification == 0 {
@@ -225,7 +230,14 @@ func UniqueAuthorsPerDayAnalysis(parameters SimpleAnalysisParameter) (UniqueAuth
 		simpleRes.TotalLinesChecked++
 	}
 	// Go through the list of Authors per day and count the size of each of these things.
-
+	log.Infof("%#v", simpleRes)
+	if looperr == nil {
+		for k, v := range AuthPerDay {
+			log.Infof("Keys %d & values %d", k, len(v))
+		}
+	} else {
+		return *results, looperr
+	}
 	return *results, nil
 }
 
