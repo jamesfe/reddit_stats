@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"io"
 	"strings"
 	"time"
 )
@@ -32,7 +33,11 @@ func UniqueAuthorsPerDayAnalysis(parameters SimpleAnalysisParameter) (UniqueAuth
 		var stuff, err = inFileReader.ReadBytes('\n')
 		if err != nil {
 			log.Warningf("%d, %d (initial, final) lines matched out of %d", simpleRes.TotalFirstMatches, simpleRes.TotalMatches, simpleRes.TotalLinesChecked)
-			looperr = err
+			if err == io.EOF {
+				looperr = nil
+			} else {
+				looperr = err
+			}
 			break
 		}
 		if (parameters.CheckLines) && (simpleRes.TotalLinesChecked >= parameters.LinesToCheck) {

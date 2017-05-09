@@ -122,19 +122,17 @@ func main() {
 	} else {
 		simpleParams.LogLineNotification = true
 	}
-	/*
-		var simpleResults, err = SimpleFileAnalysis(simpleParams)
-		if err == nil {
-			log.Infof("%#v", simpleResults)
-		}
-	*/
 	var authorsPerDay, err = UniqueAuthorsPerDayAnalysis(simpleParams)
 	if err == nil {
 		a, b := json.Marshal(authorsPerDay)
 		if b == nil {
 			log.Infof("%s", a)
+		} else {
+			log.Errorf("Error parsing output JSON: %s", b)
 		}
 		log.Infof("UniqueAuthors: %#v", authorsPerDay)
+	} else {
+		log.Errorf("There was an error performing UniqueAuthorAnalysis: %s", err)
 	}
 
 }
