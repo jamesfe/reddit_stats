@@ -5,11 +5,11 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/json"
-	"github.com/op/go-logging"
 	"os"
 	"strconv"
 	"strings"
-	"time"
+
+	"github.com/op/go-logging"
 )
 import "flag"
 
@@ -21,24 +21,6 @@ var format = logging.MustStringFormatter(
 var (
 	inFile string
 )
-
-func newSimpleAnalysisResult() SimpleAnalysisResult {
-	return (SimpleAnalysisResult{TotalMatches: 0, TotalFirstMatches: 0, TotalLinesChecked: 0})
-}
-
-type SimpleAnalysisResult struct {
-	TotalMatches      int
-	TotalFirstMatches int
-	TotalLinesChecked int
-}
-
-type SimpleAnalysisParameter struct {
-	LinesToCheck             int  // Max number of lines per file to check
-	CheckLines               bool // even check them?
-	LineIntervalNotification int  // How many lines between print statements?
-	LogLineNotification      bool // whether or not to print notifications at line vals
-	Filename                 string
-}
 
 type Comment struct {
 	Author string `json:"author"`
@@ -117,130 +99,6 @@ func getFileReader(filename string) (*bufio.Reader, func() error) {
 	}
 }
 
-func SimpleFileAnalysis(parameters SimpleAnalysisParameter) (SimpleAnalysisResult, error) {
-	/* Opens the file, reads it, counts some things up and returns a set of results.  */
-	inFileReader, f := getFileReader(inFile)
-	defer f()
-	results := newSimpleAnalysisResult()
-
-	for {
-		var v Comment
-		var stuff, err = inFileReader.ReadBytes('\n')
-		if err != nil {
-			log.Warningf("%d, %d (initial, final) lines matched out of %d", results.TotalFirstMatches, results.TotalMatches, results.TotalLinesChecked)
-			return results, err
-		}
-		if (parameters.CheckLines) && (results.TotalLinesChecked >= parameters.LinesToCheck) {
-			log.Errorf("Max lines of %d exceeded: %d", parameters.LinesToCheck, results.TotalLinesChecked)
-			return results, nil
-		}
-		if isDonaldLite(stuff) {
-			results.TotalFirstMatches += 1
-			newerr := json.Unmarshal(stuff, &v)
-
-			if newerr == nil && isDonaldCertainly(v) {
-				results.TotalMatches += 1
-			} else {
-				return results, newerr
-			}
-		}
-		if parameters.LogLineNotification && results.TotalLinesChecked%parameters.LineIntervalNotification == 0 {
-			log.Debugf("Read %d lines", results.TotalLinesChecked)
-		}
-		results.TotalLinesChecked++
-	}
-	return results, nil
-}
-
-type UniqueAuthorsPerDayResult struct {
-	AuthorsPerDay map[time.Time]int
-	StartDate     time.Time
-	EndDate       time.Time
-}
-
-func New() *UniqueAuthorsPerDayResult {
-	retVal := new(UniqueAuthorsPerDayResult)
-	retVal.AuthorsPerDay = map[time.Time]int{}
-	return retVal
-}
-
-func UniqueAuthorsPerDayAnalysis(parameters SimpleAnalysisParameter) (UniqueAuthorsPerDayResult, error) {
-	results := New()
-	log.Warningf("%#v", results)
-
-	inFileReader, f := getFileReader(inFile)
-	defer f()
-	simpleRes := newSimpleAnalysisResult()
-
-	AuthPerDay := map[int]map[string]bool{}
-	var secondsPerDay int = 60 * 60 * 24
-	var looperr error
-	for {
-		var stuff, err = inFileReader.ReadBytes('\n')
-		if err != nil {
-			log.Warningf("%d, %d (initial, final) lines matched out of %d", simpleRes.TotalFirstMatches, simpleRes.TotalMatches, simpleRes.TotalLinesChecked)
-			looperr = err
-			break
-		}
-		if (parameters.CheckLines) && (simpleRes.TotalLinesChecked >= parameters.LinesToCheck) {
-			log.Errorf("Max lines of %d exceeded: %d", parameters.LinesToCheck, simpleRes.TotalLinesChecked)
-			looperr = nil
-			break
-		}
-		if isDonaldLite(stuff) {
-			simpleRes.TotalFirstMatches += 1
-			var rawJsonMap interface{}
-			newerr := json.Unmarshal(stuff, &rawJsonMap)
-
-			if newerr == nil {
-				/* we do some analysis here:
-				we calculate the day on which the post was made
-				we check if the author is in our list of authors for that day
-				if he is, we do nothing
-				otherwise we add him to the list
-				*/
-
-				// TODO: Is this really the donald?
-
-				v := rawJsonMap.(map[string]interface{})
-				author := v["author"].(string)
-				realTime := getIntTimestamp(v["created_utc"])
-				if realTime == 0 { // if it is junk, go on
-					continue
-				}
-				var extraSeconds int = realTime % secondsPerDay
-				var dateInSeconds int = (realTime - extraSeconds) / secondsPerDay // should be the same number for every day
-
-				if AuthPerDay[dateInSeconds] == nil {
-					AuthPerDay[dateInSeconds] = make(map[string]bool)
-				}
-				if !AuthPerDay[dateInSeconds][author] {
-					AuthPerDay[dateInSeconds][author] = true
-				}
-				simpleRes.TotalMatches += 1
-			} else {
-				log.Errorf("JSON Parsing Error: %s", newerr)
-				looperr = newerr
-				break
-			}
-		}
-		if parameters.LogLineNotification && simpleRes.TotalLinesChecked%parameters.LineIntervalNotification == 0 {
-			log.Debugf("Read %d lines", simpleRes.TotalLinesChecked)
-		}
-		simpleRes.TotalLinesChecked++
-	}
-	// Go through the list of Authors per day and count the size of each of these things.
-	log.Infof("%#v", simpleRes)
-	if looperr == nil {
-		for k, v := range AuthPerDay {
-			log.Infof("Keys %d & values %d", k, len(v))
-		}
-	} else {
-		return *results, looperr
-	}
-	return *results, nil
-}
-
 func main() {
 	filename := flag.String("filename", "", "input filename")
 	sizeCheck := flag.Int("cv", 1000000, "check value")
@@ -272,6 +130,10 @@ func main() {
 	*/
 	var authorsPerDay, err = UniqueAuthorsPerDayAnalysis(simpleParams)
 	if err == nil {
+		a, b := json.Marshal(authorsPerDay)
+		if b == nil {
+			log.Infof("%s", a)
+		}
 		log.Infof("UniqueAuthors: %#v", authorsPerDay)
 	}
 
