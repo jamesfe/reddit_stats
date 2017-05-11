@@ -117,7 +117,7 @@ func NewSimpleAnalysisParameter(filename string, maxLines int, checkInterval int
 
 func isEligibleFile(f string) bool {
 	f = strings.ToLower(f)
-	if strings.HasSuffix(f, ".json.gz") || strings.HasSuffix(f, ".json") {
+	if strings.HasSuffix(f, ".gz") || strings.HasSuffix(f, ".json") {
 		return true
 	}
 	return false
@@ -150,7 +150,7 @@ func main() {
 	} else {
 		filesToCheck = append(filesToCheck, *filename)
 	}
-
+	mainResult := NewUniqueAuthorsPerDayResult()
 	for _, file := range filesToCheck {
 
 		log.Infof("Changing %s", file)
@@ -158,15 +158,23 @@ func main() {
 
 		var authorsPerDay, err = UniqueAuthorsPerDayAnalysis(simpleParams)
 		if err == nil {
-			apd, marshallErr := json.Marshal(authorsPerDay)
-			if marshallErr == nil {
-				log.Infof("%s", apd)
-			} else {
-				log.Errorf("Error parsing output JSON: %s", marshallErr)
+			for key, newValue := range authorsPerDay.AuthorsPerDay {
+				if value, ok := mainResult.AuthorsPerDay[key]; ok {
+					mainResult.AuthorsPerDay[key] = value + newValue
+				} else {
+					mainResult.AuthorsPerDay[key] = newValue
+				}
 			}
 			log.Infof("UniqueAuthors: %#v", authorsPerDay)
 		} else {
 			log.Errorf("There was an error performing UniqueAuthorAnalysis: %s", err)
 		}
 	}
+	apd, marshallErr := json.Marshal(mainResult)
+	if marshallErr == nil {
+		log.Infof("%s", apd)
+	} else {
+		log.Errorf("Error parsing output JSON: %s", marshallErr)
+	}
+
 }

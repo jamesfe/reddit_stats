@@ -13,14 +13,14 @@ type UniqueAuthorsPerDayResult struct {
 	EndDate       time.Time      `json:"-"`
 }
 
-func New() *UniqueAuthorsPerDayResult {
+func NewUniqueAuthorsPerDayResult() *UniqueAuthorsPerDayResult {
 	retVal := new(UniqueAuthorsPerDayResult)
 	retVal.AuthorsPerDay = map[string]int{}
 	return retVal
 }
 
 func UniqueAuthorsPerDayAnalysis(parameters SimpleAnalysisParameter) (UniqueAuthorsPerDayResult, error) {
-	results := New()
+	results := NewUniqueAuthorsPerDayResult()
 	// TODO: add start and end date to this analysis
 	log.Infof("Reading filename: %s", parameters.Filename)
 	inFileReader, f := getFileReader(parameters.Filename)
