@@ -37,6 +37,7 @@ func UniqueAuthorsPerDayAnalysis(parameters SimpleAnalysisParameter) (UniqueAuth
 			if err == io.EOF {
 				looperr = nil
 			} else {
+				log.Errorf("IO Error: %s", err)
 				looperr = err
 			}
 			break
@@ -90,14 +91,12 @@ func UniqueAuthorsPerDayAnalysis(parameters SimpleAnalysisParameter) (UniqueAuth
 		simpleRes.TotalLinesChecked++
 	}
 	// Go through the list of Authors per day and count the size of each of these things.
-	log.Infof("%#v", simpleRes)
+	log.Infof("Simple Results: %#v", simpleRes)
 	if looperr == nil {
 		for k, v := range AuthPerDay {
 			item := time.Unix(int64(k), 0).Format("02-01-2006")
 			results.AuthorsPerDay[item] = len(v)
 		}
-	} else {
-		return *results, looperr
 	}
 	return *results, nil
 }

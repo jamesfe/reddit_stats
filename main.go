@@ -5,7 +5,9 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/json"
+	"io/ioutil"
 	"os"
+	"path"
 	"strconv"
 	"strings"
 
@@ -95,15 +97,7 @@ func getFileReader(filename string) (*bufio.Reader, func() error) {
 	}
 }
 
-func main() {
-	filename := flag.String("filename", "", "input filename")
-	sizeCheck := flag.Int("cv", 1000000, "check value")
-	maxLines := flag.Int("maxlines", 0, "max lines to read")
-	flag.Parse()
-	inFile = *filename
-
-	log.Debug("reading " + inFile)
-
+func NewSimpleAnalysisParameter(filename string, maxLines int, checkInterval int) SimpleAnalysisParameter {
 	var simpleParams SimpleAnalysisParameter
 	simpleParams.Filename = filename
 	simpleParams.LinesToCheck = maxLines
@@ -112,23 +106,67 @@ func main() {
 	} else {
 		simpleParams.CheckLines = true
 	}
-	simpleParams.LineIntervalNotification = *sizeCheck
+	simpleParams.LineIntervalNotification = checkInterval
 	if simpleParams.LineIntervalNotification == -1 {
 		simpleParams.LogLineNotification = false
 	} else {
 		simpleParams.LogLineNotification = true
 	}
-	var authorsPerDay, err = UniqueAuthorsPerDayAnalysis(simpleParams)
-	if err == nil {
-		a, b := json.Marshal(authorsPerDay)
-		if b == nil {
-			log.Infof("%s", a)
+	return simpleParams
+}
+
+func isEligibleFile(f string) bool {
+	f = strings.ToLower(f)
+	if strings.HasSuffix(f, ".json.gz") || strings.HasSuffix(f, ".json") {
+		return true
+	}
+	return false
+}
+
+func main() {
+	filename := flag.String("filename", "", "input filename")
+	checkInterval := flag.Int("cv", 1000000, "check value")
+	maxLines := flag.Int("maxlines", 0, "max lines to read")
+	flag.Parse()
+	inFile := *filename
+
+	log.Debug("reading " + inFile)
+
+	var filesToCheck []string
+
+	if inFile[len(inFile)-1:] == "/" {
+		files, dirErr := ioutil.ReadDir(inFile)
+		if dirErr == nil {
+			for _, file := range files {
+				fName := file.Name()
+				if isEligibleFile(fName) {
+					filesToCheck = append(filesToCheck, path.Join(inFile, fName))
+				}
+			}
 		} else {
-			log.Errorf("Error parsing output JSON: %s", b)
+			log.Fatalf("Appeared to be a directory but was not: %s", dirErr)
 		}
-		log.Infof("UniqueAuthors: %#v", authorsPerDay)
+		// we need to loop over the files
 	} else {
-		log.Errorf("There was an error performing UniqueAuthorAnalysis: %s", err)
+		filesToCheck = append(filesToCheck, *filename)
 	}
 
+	for _, file := range filesToCheck {
+
+		log.Infof("Changing %s", file)
+		var simpleParams SimpleAnalysisParameter = NewSimpleAnalysisParameter(file, *maxLines, *checkInterval)
+
+		var authorsPerDay, err = UniqueAuthorsPerDayAnalysis(simpleParams)
+		if err == nil {
+			apd, marshallErr := json.Marshal(authorsPerDay)
+			if marshallErr == nil {
+				log.Infof("%s", apd)
+			} else {
+				log.Errorf("Error parsing output JSON: %s", marshallErr)
+			}
+			log.Infof("UniqueAuthors: %#v", authorsPerDay)
+		} else {
+			log.Errorf("There was an error performing UniqueAuthorAnalysis: %s", err)
+		}
+	}
 }
