@@ -22,7 +22,7 @@ type SimpleAnalysisParameter struct {
 
 func SimpleFileAnalysis(parameters SimpleAnalysisParameter) (SimpleAnalysisResult, error) {
 	/* Opens the file, reads it, counts some things up and returns a set of results.  */
-	inFileReader, f := getFileReader(inFile)
+	inFileReader, f := getFileReader(parameters.Filename)
 	defer f()
 	results := newSimpleAnalysisResult()
 

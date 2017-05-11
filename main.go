@@ -18,10 +18,6 @@ var format = logging.MustStringFormatter(
 	`%{color}%{time:15:04:05.000} %{shortfunc} ▶ %{level:.8s} %{id:03x}%{color:reset} %{message}`,
 )
 
-var (
-	inFile string
-)
-
 type Comment struct {
 	Author string `json:"author"`
 	// Author_flair_css_class string `json:"author_flair_css_class "`
@@ -77,7 +73,7 @@ func getIntTimestamp(v interface{}) int {
 
 func getFileReader(filename string) (*bufio.Reader, func() error) {
 	/* Opens the file (appropriately, gz or not) and returns a reader. */
-	f, err := os.Open(inFile)
+	f, err := os.Open(filename)
 	if err != nil {
 		log.Debug("open")
 		log.Fatal(err)
@@ -85,7 +81,7 @@ func getFileReader(filename string) (*bufio.Reader, func() error) {
 	retVal := bufio.NewReader(f)
 
 	// If it ends in GZ it is a zip and we should ungzip it.
-	if strings.HasSuffix(strings.ToLower(inFile), "gz") {
+	if strings.HasSuffix(strings.ToLower(filename), "gz") {
 		gr, err := gzip.NewReader(f)
 		if err != nil {
 			log.Debug("gzip")
@@ -109,8 +105,8 @@ func main() {
 	log.Debug("reading " + inFile)
 
 	var simpleParams SimpleAnalysisParameter
-	simpleParams.Filename = inFile
-	simpleParams.LinesToCheck = *maxLines
+	simpleParams.Filename = filename
+	simpleParams.LinesToCheck = maxLines
 	if simpleParams.LinesToCheck == 0 {
 		simpleParams.CheckLines = false
 	} else {

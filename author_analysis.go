@@ -22,7 +22,8 @@ func New() *UniqueAuthorsPerDayResult {
 func UniqueAuthorsPerDayAnalysis(parameters SimpleAnalysisParameter) (UniqueAuthorsPerDayResult, error) {
 	results := New()
 	// TODO: add start and end date to this analysis
-	inFileReader, f := getFileReader(inFile)
+	log.Infof("Reading filename: %s", parameters.Filename)
+	inFileReader, f := getFileReader(parameters.Filename)
 	defer f()
 	simpleRes := newSimpleAnalysisResult()
 
