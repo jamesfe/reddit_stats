@@ -53,8 +53,11 @@ func isDonaldLite(data []byte) bool {
 }
 
 func readResultChan(input chan AuthorDateTuple) {
-	item := <-input
-	log.Infof("Got one! %v", item)
+	for {
+		item := <-input
+		if item.AuthorName != "[deleted]" {
+		}
+	}
 }
 
 func isDonaldCertainly(comment Comment) bool {
@@ -130,9 +133,11 @@ func isEligibleFile(f string) bool {
 	return false
 }
 
+var far map[string]map[string]int
+
 func main() {
 	filename := flag.String("filename", "", "input filename")
-	// checkInterval := flag.Int("cv", 1000000, "check value")
+	checkInterval := flag.Int("cv", 1000000, "check value")
 	maxLines := flag.Int("maxlines", 0, "max lines to read")
 	flag.Parse()
 	inFile := *filename
@@ -157,55 +162,39 @@ func main() {
 	} else {
 		filesToCheck = append(filesToCheck, *filename)
 	}
-	fullAuthorResult := make(map[string]map[string]int)
-	simpleResultChan := make(chan AuthorDateTuple)
+	simpleResultChan := make(chan AuthorDateTuple, 10000)
 	log.Infof("Entering analysis stream.")
+	// A data structure to keep a map of dates -> authors -> comments
 	for _, file := range filesToCheck {
 
 		inFileReader, f := getFileReader(file)
 		defer f()
-		for {
+		for lines := 0; lines < *maxLines; lines++ {
+			if lines%*checkInterval == 0 {
+				log.Debugf("Read %d lines", lines)
+			}
 			var stuff, err = inFileReader.ReadBytes('\n')
 			if err == nil {
 				go AuthorSingleLine(stuff, simpleResultChan)
 			} else {
-				log.Errorf("File Error: %s", err)
+				log.Errorf("File Error: %s", err) // maybe we are in an IO error?
 				break
 			}
 		}
-		go readResultChan(simpleResultChan)
-		/*
-			// we need to abstract this and turn it into a stream of data
-			log.Infof("Changing %s", file)
-			var simpleParams SimpleAnalysisParameter = NewSimpleAnalysisParameter(file, *maxLines, *checkInterval)
-			authorAnalysis, deeperr := AuthorDeepAnalysis(simpleParams)
-			if deeperr == nil {
-				for key, value := range authorAnalysis {
-					fullAuthorResult[key] = value
-				}
-				log.Infof("Deep analysis first step complete")
-			} */
-		/*
-			var authorsPerDay, err = UniqueAuthorsPerDayAnalysis(simpleParams)
-			if err == nil {
-				for key, newValue := range authorsPerDay.AuthorsPerDay {
-					if value, ok := mainResult.AuthorsPerDay[key]; ok {
-						mainResult.AuthorsPerDay[key] = value + newValue
-					} else {
-						mainResult.AuthorsPerDay[key] = newValue
-					}
-				}
-				log.Infof("UniqueAuthors: %#v", authorsPerDay)
-			} else {
-				log.Errorf("There was an error performing UniqueAuthorAnalysis: %s", err)
-			}
-		*/
-
 	}
-	apd, marshallErr := json.Marshal(fullAuthorResult)
+	far = make(map[string]map[string]int)
+	d := <-simpleResultChan
+	if far[d.AuthorDate] == nil {
+		far[d.AuthorDate][d.AuthorName] += 1
+	} else {
+		far[d.AuthorDate] = make(map[string]int)
+	}
+
+	apd, marshallErr := json.Marshal(far)
 	if marshallErr == nil {
 		outputFilename := fmt.Sprintf("./output/output_%d.json", time.Now().Unix())
 		ioutil.WriteFile(outputFilename, apd, 0644)
+		// log.Infof("JSON Output: %s", apd)
 		log.Infof("Output written to %s", outputFilename)
 	} else {
 		log.Errorf("Error parsing output JSON: %s", marshallErr)

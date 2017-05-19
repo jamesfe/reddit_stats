@@ -87,3 +87,63 @@ Python 2.7.12 (default, Sep 12 2016, 09:26:13)
 Type "help", "copyright", "credits" or "license" for more information.
 >>> 1822765 - 1362541
 460224
+
+
+
+
+
+
+
+
+
+
+19 may 2017
+today I changed a lot of stuff to go routines.
+I changed the reading from files to a goroutine based thingy and that's simpler in terms of coding
+A little bit slower and more bugs with concurrency if you decide to aggregate things as you read/process them
+Probably smarter to use protobuf
+
+Major concurrency issues when reading & aggregating simultaneously
+
+Here are the results of a simple author count (before is with goroutines + race protection code and after
+is with just handling the goroutines)
+
+~/PersCode/gosource/src/github.com/jamesfe/reddit_stats:jferrara$ make bigtest
+time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03 --cv 1000000 --maxlines 10000000
+2017/05/19 22:47:06 reading /Users/jferrara/PersCode/reddit_donald/data/RC_2017-03
+2017/05/19 22:47:06 Entering analysis stream.
+2017/05/19 22:47:06 Read 0 lines
+2017/05/19 22:47:17 Read 1000000 lines
+2017/05/19 22:47:28 Read 2000000 lines
+2017/05/19 22:47:41 Read 3000000 lines
+2017/05/19 22:48:07 Read 4000000 lines
+2017/05/19 22:48:42 Read 5000000 lines
+2017/05/19 22:48:48 Read 6000000 lines
+2017/05/19 22:49:38 Read 7000000 lines
+2017/05/19 22:49:44 Read 8000000 lines
+2017/05/19 22:49:49 Read 9000000 lines
+2017/05/19 22:51:09 Output written to ./output/output_1495227069.json
+
+real    4m5.655s
+user    4m27.552s
+sys     2m49.134s
+
+~/PersCode/gosource/src/github.com/jamesfe/reddit_stats:jferrara$ make bigtest
+time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03 --cv 1000000 --maxlines 10000000
+2017/05/19 22:52:58 reading /Users/jferrara/PersCode/reddit_donald/data/RC_2017-03
+2017/05/19 22:52:58 Entering analysis stream.
+2017/05/19 22:52:58 Read 0 lines
+2017/05/19 22:53:01 Read 1000000 lines
+2017/05/19 22:53:04 Read 2000000 lines
+2017/05/19 22:53:07 Read 3000000 lines
+2017/05/19 22:53:10 Read 4000000 lines
+2017/05/19 22:53:13 Read 5000000 lines
+2017/05/19 22:53:17 Read 6000000 lines
+2017/05/19 22:53:20 Read 7000000 lines
+2017/05/19 22:53:23 Read 8000000 lines
+2017/05/19 22:53:26 Read 9000000 lines
+2017/05/19 22:53:29 Output written to ./output/output_1495227209.json
+
+real    0m30.832s
+user    1m14.028s
+sys     0m8.182s
