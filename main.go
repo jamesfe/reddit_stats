@@ -5,11 +5,13 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/op/go-logging"
 )
@@ -48,6 +50,11 @@ func isDonaldLite(data []byte) bool {
 		return true
 	}
 	return false
+}
+
+func readResultChan(input chan AuthorDateTuple) {
+	item := <-input
+	log.Infof("Got one! %v", item)
 }
 
 func isDonaldCertainly(comment Comment) bool {
@@ -125,7 +132,7 @@ func isEligibleFile(f string) bool {
 
 func main() {
 	filename := flag.String("filename", "", "input filename")
-	checkInterval := flag.Int("cv", 1000000, "check value")
+	// checkInterval := flag.Int("cv", 1000000, "check value")
 	maxLines := flag.Int("maxlines", 0, "max lines to read")
 	flag.Parse()
 	inFile := *filename
@@ -144,35 +151,62 @@ func main() {
 				}
 			}
 		} else {
-			log.Fatalf("Appeared to be a directory but was not: %s", dirErr)
+			log.Fatalf("Appeared to be a directory but had trouble: %s", dirErr)
 		}
 		// we need to loop over the files
 	} else {
 		filesToCheck = append(filesToCheck, *filename)
 	}
-	mainResult := NewUniqueAuthorsPerDayResult()
+	fullAuthorResult := make(map[string]map[string]int)
+	simpleResultChan := make(chan AuthorDateTuple)
+	log.Infof("Entering analysis stream.")
 	for _, file := range filesToCheck {
 
-		log.Infof("Changing %s", file)
-		var simpleParams SimpleAnalysisParameter = NewSimpleAnalysisParameter(file, *maxLines, *checkInterval)
-
-		var authorsPerDay, err = UniqueAuthorsPerDayAnalysis(simpleParams)
-		if err == nil {
-			for key, newValue := range authorsPerDay.AuthorsPerDay {
-				if value, ok := mainResult.AuthorsPerDay[key]; ok {
-					mainResult.AuthorsPerDay[key] = value + newValue
-				} else {
-					mainResult.AuthorsPerDay[key] = newValue
-				}
+		inFileReader, f := getFileReader(file)
+		defer f()
+		for {
+			var stuff, err = inFileReader.ReadBytes('\n')
+			if err == nil {
+				go AuthorSingleLine(stuff, simpleResultChan)
+			} else {
+				log.Errorf("File Error: %s", err)
+				break
 			}
-			log.Infof("UniqueAuthors: %#v", authorsPerDay)
-		} else {
-			log.Errorf("There was an error performing UniqueAuthorAnalysis: %s", err)
 		}
+		go readResultChan(simpleResultChan)
+		/*
+			// we need to abstract this and turn it into a stream of data
+			log.Infof("Changing %s", file)
+			var simpleParams SimpleAnalysisParameter = NewSimpleAnalysisParameter(file, *maxLines, *checkInterval)
+			authorAnalysis, deeperr := AuthorDeepAnalysis(simpleParams)
+			if deeperr == nil {
+				for key, value := range authorAnalysis {
+					fullAuthorResult[key] = value
+				}
+				log.Infof("Deep analysis first step complete")
+			} */
+		/*
+			var authorsPerDay, err = UniqueAuthorsPerDayAnalysis(simpleParams)
+			if err == nil {
+				for key, newValue := range authorsPerDay.AuthorsPerDay {
+					if value, ok := mainResult.AuthorsPerDay[key]; ok {
+						mainResult.AuthorsPerDay[key] = value + newValue
+					} else {
+						mainResult.AuthorsPerDay[key] = newValue
+					}
+				}
+				log.Infof("UniqueAuthors: %#v", authorsPerDay)
+			} else {
+				log.Errorf("There was an error performing UniqueAuthorAnalysis: %s", err)
+			}
+		*/
+
 	}
-	apd, marshallErr := json.Marshal(mainResult)
+	apd, marshallErr := json.Marshal(fullAuthorResult)
 	if marshallErr == nil {
-		log.Infof("%s", apd)
+		outputFilename := fmt.Sprintf("./output/output_%d.json", time.Now().Unix())
+		ioutil.WriteFile(outputFilename, apd, 0644)
+		log.Infof("Output written to %s", outputFilename)
 	} else {
 		log.Errorf("Error parsing output JSON: %s", marshallErr)
 	}
