@@ -1,0 +1,21 @@
+package example;
+
+message comment {
+    required string author = 1;
+    required string body = 2;
+    optional string author_flair_css_class = 16;
+    optional string author_flair_text = 17;
+    optional int32 controversiality = 18;
+    optional int64 created_utc = 6;
+    optional string edited =7;
+    optional int32 gilded = 19;
+    required string id = 9;
+    required string link_id = 22;
+    required string parent_id = 20;
+    required int64 retrieved_on = 12;
+    required int32 score = 13;
+    required string subreddit = 14;
+    required string subreddit_id = 15;
+    required int32 ups = 21;
+
+  }

@@ -25,3 +25,7 @@ bigtest:
 .PHONY: dirtest
 dirtest:
 	time ./reddit_stats --filename ~/PersCode/reddit_donald/dir_test/ -cv 100 --maxlines 1000
+
+.PHONY: proto
+proto:
+	protoc --go_out=./ ./protos/*.proto
