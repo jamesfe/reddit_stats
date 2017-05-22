@@ -39,13 +39,9 @@ func main() {
 				log.Debugf("Read %d lines", lines)
 			}
 			var jsonBytes, err = inFileReader.ReadBytes('\n')
-			if err == nil {
+			if err == nil { // really trying to isolate the business code right here so we can call one or two functions.
 				if AuthorSingleLine(jsonBytes, &resultItem) {
-					if far[resultItem.AuthorDate] != nil {
-						far[resultItem.AuthorDate][resultItem.AuthorName] += 1
-					} else {
-						far[resultItem.AuthorDate] = make(map[string]int)
-					}
+					AggregateAuthorLine(&resultItem, &far)
 				}
 			} else {
 				log.Errorf("File Error: %s", err) // maybe we are in an IO error?
@@ -63,5 +59,4 @@ func main() {
 	} else {
 		log.Errorf("Error parsing output JSON: %s", marshallErr)
 	}
-
 }

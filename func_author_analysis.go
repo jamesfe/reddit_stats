@@ -34,3 +34,12 @@ func AuthorSingleLine(line []byte, result *AuthorDateTuple) bool {
 	}
 	return false
 }
+
+func AggregateAuthorLine(authorTuple *AuthorDateTuple, resultMap *map[string]map[string]int) {
+	/* mutate the map in place with a new result */
+	if (*resultMap)[authorTuple.AuthorDate] != nil {
+		(*resultMap)[authorTuple.AuthorDate][authorTuple.AuthorName] += 1
+	} else {
+		(*resultMap)[authorTuple.AuthorDate] = make(map[string]int)
+	}
+}
