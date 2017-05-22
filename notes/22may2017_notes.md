@@ -29,4 +29,15 @@ sys     0m4.412s
 
 We can see that they are comparable to the concurrency stuff - there wasn't much gain there since we are mostly waititng for disk I/O.
 
+# Protobuf conversion
+I'm going to convert all the data to protobuf for a few reasons:
+1. Disk space - sure we compress the data and that saves us a bit on disk space, but we are still reading and decoding the same bytes over and over.  I wonder if protobuf will help with this.
+2. Speed: We aren't going to read as many bytes from the disk
+3. Move more work from the disk to the processor: I believe the disk (specifically, read) is taking on too much work
+4. We can make a single pass over the data and encode it once, throwing away data we don't need.
+5. We are going to prep the data as well by creating a subset of the data in separate files.  This way we can scan the target subreddit directly while still having access to the greater body of data.
 
+There are drawbacks:
+1. We may lose some data if I throw it away for error or marshalling reasons during the conversion.  More risk here too since I am going to throw away the gzip files after I am confident in the conversion.
+2. We will possibly be CPU bound after this (mitigating factor: the disaster of goroutines returns?)
+3. We have a hard and fast schema and if new data becomes available (or if fields go away) in the future we will have to flex.
