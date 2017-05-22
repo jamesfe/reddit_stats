@@ -2,21 +2,26 @@
 
 just reading 10k without scanning the string
 
+```
 2017/04/17 19:56:22 reading ./data/10k_sample_data.json.gz
 
 real    0m0.214s
 user    0m0.210s
 sys     0m0.012s
+```
 
 read the string first, lower, check for donald:
 
+```
 2017/04/17 19:54:59 reading ./data/10k_sample_data.json.gz
 
 real    0m0.158s
 user    0m0.148s
 sys     0m0.013s
+```
 
 all comments, no string scanning for The_donald
+```
 ~/PersCode/gosource/src/github.com/jamesfe/reddit_stats:jferrara$ time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03.gz
 2017/04/17 21:12:20 reading /Users/jferrara/PersCode/reddit_donald/data/RC_2017-03.gz
 2017/04/17 21:13:31 Fatal Scanning Error: %s
@@ -25,8 +30,10 @@ all comments, no string scanning for The_donald
  real    1m11.000s
  user    1m14.769s
  sys     0m1.914s
+```
 
 with scanning
+```
  ~/PersCode/gosource/src/github.com/jamesfe/reddit_stats:jferrara$ go build
  ~/PersCode/gosource/src/github.com/jamesfe/reddit_stats:jferrara$ time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03.gz
  2017/04/17 21:14:22 reading /Users/jferrara/PersCode/reddit_donald/data/RC_2017-03.gz
@@ -35,9 +42,10 @@ with scanning
  real    0m51.466s
  user    0m52.957s
  sys     0m1.154s
-
+```
 
 scanning and unmarshalling the body
+```
 ~/PersCode/gosource/src/github.com/jamesfe/reddit_stats:jferrara$ time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03.gz
 2017/04/17 21:22:22 reading /Users/jferrara/PersCode/reddit_donald/data/RC_2017-03.gz
 2017/04/17 21:23:16 Fatal Scanning Error <nil>
@@ -45,9 +53,11 @@ scanning and unmarshalling the body
 real    0m53.629s
 user    0m55.094s
 sys     0m1.249s
+```
 
 
 with a counter every step and match: 
+```
 ~/PersCode/gosource/src/github.com/jamesfe/reddit_stats:jferrara$ time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03.gz
 2017/04/17 21:26:14 reading /Users/jferrara/PersCode/reddit_donald/data/RC_2017-03.gz
 81407 lines matched out of 3423896
@@ -89,27 +99,21 @@ Python 2.7.12 (default, Sep 12 2016, 09:26:13)
 Type "help", "copyright", "credits" or "license" for more information.
 >>> 1822765 - 1362541
 460224
+```
 
 
-
-
-
-
-
-
-
-
-19 may 2017
+#19 may 2017
 today I changed a lot of stuff to go routines.
 I changed the reading from files to a goroutine based thingy and that's simpler in terms of coding
 A little bit slower and more bugs with concurrency if you decide to aggregate things as you read/process them
 Probably smarter to use protobuf
 
-Major concurrency issues when reading & aggregating simultaneously
+## Major concurrency issues when reading & aggregating simultaneously
 
 Here are the results of a simple author count (before is with goroutines + race protection code and after
 is with just handling the goroutines)
 
+```
 ~/PersCode/gosource/src/github.com/jamesfe/reddit_stats:jferrara$ make bigtest
 time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03 --cv 1000000 --maxlines 10000000
 2017/05/19 22:47:06 reading /Users/jferrara/PersCode/reddit_donald/data/RC_2017-03
@@ -149,3 +153,4 @@ time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03 --cv 100
 real    0m30.832s
 user    1m14.028s
 sys     0m8.182s
+```

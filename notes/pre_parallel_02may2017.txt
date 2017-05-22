@@ -1,4 +1,4 @@
-Refactored the code out and this is what we have:
+# 2 may 2017  Refactored the code out and this is what we have:
 
 ```
 {34390 34390 1000000}~/PersCode/gosource/src/github.com/jamesfe/reddit_stats:jferrara$ time ./main --filename ~/PersCode/reddit_donald/data/RC_2017-03 --cv 100000 --maxlines 1000000
