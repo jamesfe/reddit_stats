@@ -2,6 +2,14 @@
 build:
 	go build -o reddit_stats
 
+.PHONY: rbuild
+rbuild:
+	go build -o reddit_stats -race
+
+.PHONY: tinytest
+tinytest:
+	time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03 --cv 1 --maxlines 10
+
 .PHONY: smalltest
 smalltest:
 	time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03 --cv 10 --maxlines 100

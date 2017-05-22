@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -11,7 +12,8 @@ type AuthorDateTuple struct {
 	AuthorName string
 }
 
-func AuthorSingleLine(line []byte, ret chan AuthorDateTuple) {
+func AuthorSingleLine(line []byte, ret chan<- AuthorDateTuple, wg *sync.WaitGroup) {
+	defer wg.Done()
 	if isDonaldLite(line) {
 		var rawJsonMap interface{}
 		jumerr := json.Unmarshal(line, &rawJsonMap)
@@ -32,4 +34,5 @@ func AuthorSingleLine(line []byte, ret chan AuthorDateTuple) {
 			log.Warningf("Bad JSON Unmarshall: %s", jumerr)
 		}
 	}
+	log.Errorf("error done")
 }

@@ -9,8 +9,10 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/op/go-logging"
@@ -162,33 +164,51 @@ func main() {
 	} else {
 		filesToCheck = append(filesToCheck, *filename)
 	}
-	simpleResultChan := make(chan AuthorDateTuple, 10000)
+	simpleResultChan := make(chan AuthorDateTuple, 1000)
 	log.Infof("Entering analysis stream.")
-	// A data structure to keep a map of dates -> authors -> comments
-	for _, file := range filesToCheck {
+	var lines int = 0
 
+	var wg sync.WaitGroup
+	for _, file := range filesToCheck {
 		inFileReader, f := getFileReader(file)
 		defer f()
-		for lines := 0; lines < *maxLines; lines++ {
+		for lines = lines; lines < *maxLines; lines++ {
+			log.Errorf("Goroutines: %d", runtime.NumGoroutine())
 			if lines%*checkInterval == 0 {
 				log.Debugf("Read %d lines", lines)
 			}
 			var stuff, err = inFileReader.ReadBytes('\n')
 			if err == nil {
-				go AuthorSingleLine(stuff, simpleResultChan)
+				wg.Add(1)
+				go AuthorSingleLine(stuff, simpleResultChan, &wg)
 			} else {
 				log.Errorf("File Error: %s", err) // maybe we are in an IO error?
 				break
 			}
 		}
 	}
+	log.Errorf("fuckit")
+	log.Errorf("Length: %d", len(simpleResultChan))
+
+	log.Errorf("Goroutines: %d", runtime.NumGoroutine())
+	wg.Wait()
+	close(simpleResultChan)
+	log.Errorf("waited")
 	far = make(map[string]map[string]int)
-	d := <-simpleResultChan
-	if far[d.AuthorDate] == nil {
-		far[d.AuthorDate][d.AuthorName] += 1
-	} else {
-		far[d.AuthorDate] = make(map[string]int)
+	for len(simpleResultChan) > 0 {
+		log.Infof("Pulling")
+		x := <-simpleResultChan
+		log.Errorf("Got one!: %#v", x)
 	}
+	/*
+		close(simpleResultChan)
+		for d := range simpleResultChan {
+			if far[d.AuthorDate] != nil {
+				far[d.AuthorDate][d.AuthorName] += 1
+			} else {
+				far[d.AuthorDate] = make(map[string]int)
+			}
+		} */
 
 	apd, marshallErr := json.Marshal(far)
 	if marshallErr == nil {
