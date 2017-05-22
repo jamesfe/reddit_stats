@@ -1,0 +1,105 @@
+Refactored the code out and this is what we have:
+
+```
+{34390 34390 1000000}~/PersCode/gosource/src/github.com/jamesfe/reddit_stats:jferrara$ time ./main --filename ~/PersCode/reddit_donald/data/RC_2017-03 --cv 100000 --maxlines 1000000
+2017/05/02 21:05:16 reading /Users/jferrara/PersCode/reddit_donald/data/RC_2017-03
+2017/05/02 21:05:17 Read 100000 lines
+2017/05/02 21:05:18 Read 200000 lines
+2017/05/02 21:05:20 Read 300000 lines
+2017/05/02 21:05:21 Read 400000 lines
+2017/05/02 21:05:22 Read 500000 lines
+2017/05/02 21:05:23 Read 600000 lines
+2017/05/02 21:05:24 Read 700000 lines
+2017/05/02 21:05:25 Read 800000 lines
+2017/05/02 21:05:26 Read 900000 lines
+2017/05/02 21:05:27 Max lines of 1000000 exceeded: 1000000
+{34390 34390 1000000}
+real    0m10.767s
+user    0m11.113s
+sys     0m0.609s
+```
+
+searching for bytes instead of doing some string manipulations saves us some time:
+
+```
+~/PersCode/gosource/src/github.com/jamesfe/reddit_stats:jferrara$ time ./main --filename ~/PersCode/reddit_donald/data/RC_2017-03 --cv 100000 --maxlines 1000000
+2017/05/02 22:47:29 reading /Users/jferrara/PersCode/reddit_donald/data/RC_2017-03
+2017/05/02 22:47:30 Read 100000 lines
+2017/05/02 22:47:31 Read 200000 lines
+2017/05/02 22:47:32 Read 300000 lines
+2017/05/02 22:47:33 Read 400000 lines
+2017/05/02 22:47:34 Read 500000 lines
+2017/05/02 22:47:35 Read 600000 lines
+2017/05/02 22:47:36 Read 700000 lines
+2017/05/02 22:47:37 Read 800000 lines
+2017/05/02 22:47:38 Read 900000 lines
+2017/05/02 22:47:39 Max lines of 1000000 exceeded: 1000000
+{34390 34390 1000000}
+real    0m10.253s
+user    0m10.660s
+sys     0m0.548s
+```
+
+For some reason we were using an old binary on 2may2017, here are the refactor results:
+
+```
+~/PersCode/gosource/src/github.com/jamesfe/reddit_stats:jferrara$ time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03 --cv 100000 --maxlines 1000000
+2017/05/04 08:54:40 reading /Users/jferrara/PersCode/reddit_donald/data/RC_2017-03
+2017/05/04 08:54:40 Read 0 lines
+2017/05/04 08:54:40 Read 100000 lines
+2017/05/04 08:54:40 Read 200000 lines
+2017/05/04 08:54:41 Read 300000 lines
+2017/05/04 08:54:41 Read 400000 lines
+2017/05/04 08:54:41 Read 500000 lines
+2017/05/04 08:54:41 Read 600000 lines
+2017/05/04 08:54:42 Read 700000 lines
+2017/05/04 08:54:42 Read 800000 lines
+2017/05/04 08:54:42 Read 900000 lines
+2017/05/04 08:54:42 Max lines of 1000000 exceeded: 1000000
+2017/05/04 08:54:42 main.SimpleAnalysisResult{TotalMatches:34390, TotalFirstMatches:34390, TotalLinesChecked:1000000}
+
+real    0m2.450s
+user    0m2.462s
+sys     0m0.304s
+```
+
+here are the results if you don't use the byte checker:
+
+```
+~/PersCode/gosource/src/github.com/jamesfe/reddit_stats:jferrara$ time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03 --cv 100000 --maxlines 1000000
+2017/05/04 08:56:38 reading /Users/jferrara/PersCode/reddit_donald/data/RC_2017-03
+2017/05/04 08:56:38 Read 0 lines
+2017/05/04 08:56:38 Read 100000 lines
+2017/05/04 08:56:39 Read 200000 lines
+2017/05/04 08:56:40 Read 300000 lines
+2017/05/04 08:56:41 Read 400000 lines
+2017/05/04 08:56:42 Read 500000 lines
+2017/05/04 08:56:43 Read 600000 lines
+2017/05/04 08:56:44 Read 700000 lines
+2017/05/04 08:56:45 Read 800000 lines
+2017/05/04 08:56:46 Read 900000 lines
+2017/05/04 08:56:47 Max lines of 1000000 exceeded: 1000000
+2017/05/04 08:56:47 main.SimpleAnalysisResult{TotalMatches:34390, TotalFirstMatches:34390, TotalLinesChecked:1000000}
+
+real    0m9.664s
+user    0m10.068s
+sys     0m0.514s
+~/PersCode/gosource/src/github.com/jamesfe/reddit_stats:jferrara$
+```
+
+# RESULTS
+We can see that if we don't lower and cast to string, our runtime is insanely better: we are saving 7s on a 1m dataset and getting exactly the same results.  
+
+## Drawback
+Since we are not lowercasing the string, there is always the chance that we'll miss a subreddit that has been altered somehow.  However, since we are doing pretty well in terms of results here, I think it'll be fine.
+
+## Full Run
+A full simple analysis looks like this:
+
+```
+2017/05/04 09:03:49 1362541, 1362541 (initial, final) lines matched out of 79723106
+
+real    3m14.468s
+user    3m6.685s
+sys     0m30.883s
+```
