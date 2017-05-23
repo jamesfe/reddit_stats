@@ -17,8 +17,8 @@ user    0m0.148s
 sys     0m0.013s
 
 all comments, no string scanning for The_donald
-~/PersCode/gosource/src/github.com/jamesfe/reddit_stats:jferrara$ time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03.gz
-2017/04/17 21:12:20 reading /Users/jferrara/PersCode/reddit_donald/data/RC_2017-03.gz
+~/PersCode/gosource/src/github.com/jamesfe/reddit_stats:jamesfe$ time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03.gz
+2017/04/17 21:12:20 reading /Users/jamesfe/PersCode/reddit_donald/data/RC_2017-03.gz
 2017/04/17 21:13:31 Fatal Scanning Error: %s
  <nil>
 
@@ -27,9 +27,9 @@ all comments, no string scanning for The_donald
  sys     0m1.914s
 
 with scanning
- ~/PersCode/gosource/src/github.com/jamesfe/reddit_stats:jferrara$ go build
- ~/PersCode/gosource/src/github.com/jamesfe/reddit_stats:jferrara$ time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03.gz
- 2017/04/17 21:14:22 reading /Users/jferrara/PersCode/reddit_donald/data/RC_2017-03.gz
+ ~/PersCode/gosource/src/github.com/jamesfe/reddit_stats:jamesfe$ go build
+ ~/PersCode/gosource/src/github.com/jamesfe/reddit_stats:jamesfe$ time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03.gz
+ 2017/04/17 21:14:22 reading /Users/jamesfe/PersCode/reddit_donald/data/RC_2017-03.gz
  2017/04/17 21:15:14 Fatal Scanning Error <nil>
 
  real    0m51.466s
@@ -38,8 +38,8 @@ with scanning
 
 
 scanning and unmarshalling the body
-~/PersCode/gosource/src/github.com/jamesfe/reddit_stats:jferrara$ time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03.gz
-2017/04/17 21:22:22 reading /Users/jferrara/PersCode/reddit_donald/data/RC_2017-03.gz
+~/PersCode/gosource/src/github.com/jamesfe/reddit_stats:jamesfe$ time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03.gz
+2017/04/17 21:22:22 reading /Users/jamesfe/PersCode/reddit_donald/data/RC_2017-03.gz
 2017/04/17 21:23:16 Fatal Scanning Error <nil>
 
 real    0m53.629s
@@ -48,22 +48,22 @@ sys     0m1.249s
 
 
 with a counter every step and match: 
-~/PersCode/gosource/src/github.com/jamesfe/reddit_stats:jferrara$ time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03.gz
-2017/04/17 21:26:14 reading /Users/jferrara/PersCode/reddit_donald/data/RC_2017-03.gz
+~/PersCode/gosource/src/github.com/jamesfe/reddit_stats:jamesfe$ time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03.gz
+2017/04/17 21:26:14 reading /Users/jamesfe/PersCode/reddit_donald/data/RC_2017-03.gz
 81407 lines matched out of 3423896
 real    0m53.361s
 user    0m54.806s
 sys     0m1.245s
-~/PersCode/gosource/src/github.com/jamesfe/reddit_stats:jferrara$ time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03.gz
-2017/04/17 21:28:11 reading /Users/jferrara/PersCode/reddit_donald/data/RC_2017-03.gz
+~/PersCode/gosource/src/github.com/jamesfe/reddit_stats:jamesfe$ time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03.gz
+2017/04/17 21:28:11 reading /Users/jamesfe/PersCode/reddit_donald/data/RC_2017-03.gz
 81407 lines matched out of 3423896
 real    0m54.128s
 user    0m55.066s
 sys     0m1.444s
 
 
-^C~/PersCode/gosource/src/github.com/jamesfe/reddit_stats:jferrara$ ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03.gz -cv 100000
-2017/04/18 21:44:45 reading /Users/jferrara/PersCode/reddit_donald/data/RC_2017-03.gz
+^C~/PersCode/gosource/src/github.com/jamesfe/reddit_stats:jamesfe$ ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03.gz -cv 100000
+2017/04/18 21:44:45 reading /Users/jamesfe/PersCode/reddit_donald/data/RC_2017-03.gz
 2017/04/18 21:44:48 Read 100000 lines
 2017/04/18 21:44:50 Read 200000 lines
 2017/04/18 21:44:52 Read 300000 lines
@@ -83,7 +83,7 @@ sys     0m1.444s
 2017/04/18 22:16:08 Read 79600000 lines
 2017/04/18 22:16:10 Read 79700000 lines
 1822765, 1362541 (initial, final) lines matched out of 797231062017/04/18 22:16:11 READLINE:  EOF
-~/PersCode/gosource/src/github.com/jamesfe/reddit_stats:jferrara$ python
+~/PersCode/gosource/src/github.com/jamesfe/reddit_stats:jamesfe$ python
 Python 2.7.12 (default, Sep 12 2016, 09:26:13)
 [GCC 4.2.1 Compatible Apple LLVM 7.3.0 (clang-703.0.31)] on darwin
 Type "help", "copyright", "credits" or "license" for more information.
@@ -110,9 +110,9 @@ Major concurrency issues when reading & aggregating simultaneously
 Here are the results of a simple author count (before is with goroutines + race protection code and after
 is with just handling the goroutines)
 
-~/PersCode/gosource/src/github.com/jamesfe/reddit_stats:jferrara$ make bigtest
+~/PersCode/gosource/src/github.com/jamesfe/reddit_stats:jamesfe$ make bigtest
 time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03 --cv 1000000 --maxlines 10000000
-2017/05/19 22:47:06 reading /Users/jferrara/PersCode/reddit_donald/data/RC_2017-03
+2017/05/19 22:47:06 reading /Users/jamesfe/PersCode/reddit_donald/data/RC_2017-03
 2017/05/19 22:47:06 Entering analysis stream.
 2017/05/19 22:47:06 Read 0 lines
 2017/05/19 22:47:17 Read 1000000 lines
@@ -130,9 +130,9 @@ real    4m5.655s
 user    4m27.552s
 sys     2m49.134s
 
-~/PersCode/gosource/src/github.com/jamesfe/reddit_stats:jferrara$ make bigtest
+~/PersCode/gosource/src/github.com/jamesfe/reddit_stats:jamesfe$ make bigtest
 time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03 --cv 1000000 --maxlines 10000000
-2017/05/19 22:52:58 reading /Users/jferrara/PersCode/reddit_donald/data/RC_2017-03
+2017/05/19 22:52:58 reading /Users/jamesfe/PersCode/reddit_donald/data/RC_2017-03
 2017/05/19 22:52:58 Entering analysis stream.
 2017/05/19 22:52:58 Read 0 lines
 2017/05/19 22:53:01 Read 1000000 lines
