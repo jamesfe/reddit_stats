@@ -62,15 +62,15 @@ func getIntTimestamp(v interface{}) int {
 	return retVal
 }
 
-func getFileWriter(inspiration string, outPath string) (*bufio.Writer, func() error) {
+func getFileWriter(inspiration string, outPath string) (*gzip.Writer, func() error) {
 	outName := filepath.Base(inspiration)
-	newPath := filepath.Join(outPath, outName)
+	newPath := filepath.Join(outPath, outName+".protodata")
 
 	out, err := os.Create(newPath)
 	if err != nil {
 		log.Fatal(err)
 	}
-	writer := bufio.NewWriter(out)
+	writer := gzip.NewWriter(out)
 	return writer, func() error { writer.Flush(); out.Close(); return nil }
 
 }

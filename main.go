@@ -58,7 +58,6 @@ func main() {
 					}
 				case "proto":
 					data, worked := reddit_proto.ConvertLineToProto(jsonBytes)
-					fmt.Printf("Read %d bytes and wrote %d bytes: saved %.2f%%\n", len(jsonBytes), len(data), float64(len(data))/float64(len(jsonBytes))*100)
 					if worked {
 						_, b := outWriter.Write(data)
 						if b != nil {
@@ -67,7 +66,6 @@ func main() {
 					} else {
 						log.Errorf("errors!")
 					}
-
 				}
 			} else {
 				log.Errorf("File Error: %s", err) // maybe we are in an IO error?
