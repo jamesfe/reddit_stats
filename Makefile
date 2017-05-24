@@ -8,9 +8,17 @@ rbuild:
 	make proto
 	go build -o reddit_stats -race
 
+.PHONY: protocomp
+protocomp:
+	time ./reddit_stats --filename ./test_data/1k_sample_data.json -cv 100 --maxlines 1000 --purpose proto --output ./protoout/
+
 .PHONY: prototest
 prototest:
 	time ./reddit_stats --filename ~/PersCode/reddit_donald/data/ --cv 100 --maxlines 1000 --purpose proto --output ./protoout/
+
+.PHONY: fileproto
+fileproto:
+	time ./reddit_stats --filename ~/PersCode/reddit_donald/data/ --cv 100000 --maxlines 10000000 --purpose proto --output ./protoout/
 
 .PHONY: medprototest
 medprototest:
