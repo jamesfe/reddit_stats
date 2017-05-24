@@ -16,11 +16,18 @@ var format = logging.MustStringFormatter(
 func GetIntTimestamp(v interface{}) int64 {
 	/* Sometimes the timestamps we get are float64, null, or strings. Here we check. */
 	var retVal int64 = 0
-	switch v.(type) {
+	switch item := v.(type) {
 	case float64:
-		retVal = int64(v.(float64))
+		retVal = int64(item)
 	case string:
-		parsed, err := strconv.ParseInt(v.(string), 10, 32)
+		parsed, err := strconv.ParseInt(item, 10, 64)
+		if err != nil {
+			retVal = 0
+		} else {
+			retVal = int64(parsed)
+		}
+	case *string:
+		parsed, err := strconv.ParseInt(*item, 10, 64)
 		if err != nil {
 			retVal = 0
 		} else {
@@ -32,14 +39,15 @@ func GetIntTimestamp(v interface{}) int64 {
 	return retVal
 }
 
-func ConvertLineToProto(line []byte, outdata *[]byte) bool {
+func ConvertLineToProto(line []byte) ([]byte, bool) {
 	var rawJsonMap interface{}
 	jumerr := json.Unmarshal(line, &rawJsonMap)
 	var newComment Comment
 	v := rawJsonMap.(map[string]interface{})
-
+	empty := []byte{}
 	if jumerr != nil {
-		return false
+		log.Errorf("Could not parse JSON")
+		return empty, false
 	}
 
 	for k, v := range v {
@@ -48,7 +56,8 @@ func ConvertLineToProto(line []byte, outdata *[]byte) bool {
 			switch k {
 			case "author":
 				if vv == "" {
-					return false // problem
+					log.Errorf("No author.")
+					return empty, false // problem
 				}
 				newComment.Author = &vv
 			case "body":
@@ -60,8 +69,13 @@ func ConvertLineToProto(line []byte, outdata *[]byte) bool {
 			case "edited":
 				newComment.Edited = &vv
 			case "created_utc":
-				log.Errorf("Whoa! A string timestamp!")
-				return false
+				ts := GetIntTimestamp(&vv)
+				if ts != 0 {
+					newComment.CreatedUTC = &ts
+				} else {
+					log.Errorf("Got a string timestamp but could not convert.")
+					return empty, false
+				}
 			case "link_id":
 				newComment.LinkId = &vv
 			case "parent_id":
@@ -70,6 +84,8 @@ func ConvertLineToProto(line []byte, outdata *[]byte) bool {
 				newComment.Subreddit = &vv
 			case "subreddit_id":
 				newComment.SubredditId = &vv
+			case "id":
+				newComment.Id = &vv
 			}
 		case float64: // all the numbers are by default float64 from json
 			item64 := int64(vv)
@@ -77,7 +93,8 @@ func ConvertLineToProto(line []byte, outdata *[]byte) bool {
 			switch k {
 			case "created_utc":
 				if item64 == 0 {
-					return false
+					log.Errorf("No timestamp.")
+					return empty, false
 				}
 				newComment.CreatedUTC = &item64
 			case "controversiality":
@@ -95,9 +112,9 @@ func ConvertLineToProto(line []byte, outdata *[]byte) bool {
 		}
 	}
 	outd, err := proto.Marshal(&newComment)
-	outdata = &outd
 	if err != nil {
-		return false
+		log.Errorf("Marshal error: %s", err)
+		return empty, false
 	}
-	return true
+	return outd, true
 }

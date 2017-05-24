@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -61,6 +62,19 @@ func getIntTimestamp(v interface{}) int {
 	return retVal
 }
 
+func getFileWriter(inspiration string, outPath string) (*bufio.Writer, func() error) {
+	outName := filepath.Base(inspiration)
+	newPath := filepath.Join(outPath, outName)
+
+	out, err := os.Create(newPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	writer := bufio.NewWriter(out)
+	return writer, func() error { writer.Flush(); out.Close(); return nil }
+
+}
+
 func getFileReader(filename string) (*bufio.Reader, func() error) {
 	/* Opens the file (appropriately, gz or not) and returns a reader. */
 	f, err := os.Open(filename)
@@ -77,7 +91,6 @@ func getFileReader(filename string) (*bufio.Reader, func() error) {
 			log.Debug("gzip")
 			log.Fatal(err)
 		}
-		// defer gr.Close()
 		retVal = bufio.NewReader(gr) // note this reader.
 		return retVal, gr.Close
 	} else {

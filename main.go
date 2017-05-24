@@ -43,6 +43,8 @@ func main() {
 	for _, file := range filesToCheck {
 		inFileReader, f := getFileReader(file)
 		defer f()
+		outWriter, flushNClose := getFileWriter(file, *outputDir)
+		defer flushNClose()
 		for lines = lines; lines < *maxLines; lines++ {
 			if lines%*checkInterval == 0 {
 				log.Debugf("Read %d lines", lines)
@@ -55,13 +57,26 @@ func main() {
 						AggregateAuthorLine(&resultItem, &far)
 					}
 				case "proto":
-					var outBytes []byte
-					reddit_proto.ConvertLineToProto(jsonBytes, &outBytes)
+					data, worked := reddit_proto.ConvertLineToProto(jsonBytes)
+					fmt.Printf("Read %d bytes and wrote %d bytes: saved %.2f%%\n", len(jsonBytes), len(data), float64(len(data))/float64(len(jsonBytes))*100)
+					if worked {
+						_, b := outWriter.Write(data)
+						if b != nil {
+							log.Fatal(b)
+						}
+					} else {
+						log.Errorf("errors!")
+					}
+
 				}
 			} else {
 				log.Errorf("File Error: %s", err) // maybe we are in an IO error?
 				break
 			}
+		}
+		if lines == *maxLines {
+			log.Infof("Max lines reached")
+			break
 		}
 	}
 
