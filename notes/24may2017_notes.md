@@ -40,4 +40,36 @@ So here is a table of file sizes:
 | 11234784813 | RC_2017-03.gz | 9556981688 | 1677.8 |
 | 10879763818 | RC_2017-04.gz | 9254979540 | 1624.78 |
 
+So the next step is to see if saving space has any correlation with being more performant.  I'm going to run a medium sized analysis on the JSON data and record the results, then I will run the same analysis on the Protobuf data and we will see.
 
+Here are the results (truncated a bit)
+```
+~/PersCode/reddit_stats:jamesfe$ make medtest
+time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03.gz --cv 10000 --maxlines 100000 --purpose simple
+2017/05/24 09:14:55 Entering analysis stream.
+2017/05/24 09:14:55 Read 0 lines
+2017/05/24 09:14:55 Read 90000 lines
+2017/05/24 09:14:55 Max lines reached
+2017/05/24 09:14:55 Output written to ./output/output_1495610095.json
+
+real    0m0.591s
+user    0m0.547s
+sys     0m0.031s
+~/PersCode/reddit_stats:jamesfe$ make bigtest
+time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03.gz --cv 1000000 --maxlines 10000000 --purpose simple
+2017/05/24 09:15:00 Entering analysis stream.
+2017/05/24 09:15:00 Read 0 lines
+2017/05/24 09:15:52 Read 9000000 lines
+2017/05/24 09:15:57 Max lines reached
+2017/05/24 09:15:57 Output written to ./output/output_1495610157.json
+
+real    0m57.031s
+user    0m58.167s
+sys     0m1.450s
+```
+
+And the output directory:
+```
+-rw-r--r--   1 jferrara  staff   16828 May 24 09:14 output_1495610095.json // medium
+-rw-r--r--   1 jferrara  staff  670500 May 24 09:15 output_1495610157.json // big
+```
