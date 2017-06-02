@@ -6,4 +6,4 @@ data/
 *.swo
 *.json
 test_data/
-
+protoout/

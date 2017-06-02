@@ -27,21 +27,21 @@ medprototest:
 
 .PHONY: tinytest
 tinytest:
-	time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03 --cv 1 --maxlines 10 --purpose simple
+	time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03.gz --cv 1 --maxlines 10 --purpose simple
 
 .PHONY: smalltest
 smalltest:
-	time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03 --cv 10 --maxlines 100 --purpose simple
+	time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03.gz --cv 10 --maxlines 100 --purpose simple
 
 
 .PHONY: medtest
 medtest:
-	time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03 --cv 10000 --maxlines 100000 --purpose simple
+	time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03.gz --cv 10000 --maxlines 100000 --purpose simple
 
 
 .PHONY: bigtest
 bigtest:
-	time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03 --cv 1000000 --maxlines 10000000 --purpose simple
+	time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03.gz --cv 1000000 --maxlines 10000000 --purpose simple
 
 
 .PHONY: dirtest
