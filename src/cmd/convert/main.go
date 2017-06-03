@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 
+	"github.com/golang/protobuf/proto"
 	"github.com/jamesfe/reddit_stats/reddit_proto"
 	"github.com/jamesfe/reddit_stats/src/utils"
 	"github.com/op/go-logging"
@@ -22,9 +23,9 @@ func main() {
 	// Right now we only have two formats
 	var ending string
 	if *fromFormat == "json" {
-		ending = "protodata"
+		ending = "protodata.gz"
 	} else {
-		ending = "json"
+		ending = "json.gz"
 	}
 
 	flag.Parse()
@@ -32,23 +33,22 @@ func main() {
 	filesToCheck := utils.GetFilesToCheck(*fromFile)
 	for _, file := range filesToCheck {
 		inFileReader, f := utils.GetFileReader(file)
+		defer f()
+		outWriter, flushNClose := utils.GetFileWriter(file, *outDir, ending)
+		defer flushNClose()
 
 		for lines = lines; lines < *maxLines; lines++ {
-			defer f()
-			outWriter, flushNClose := utils.GetFileWriter(file, *outDir, ending)
-			defer flushNClose()
 			switch *fromFormat {
 			case "json":
 				var delim byte = 200
 				var inputBytes, err = inFileReader.ReadBytes('\n')
-				if err != nil {
+				if err == nil {
 					/* Here we read some lines and then convert them. */
 					data, worked := reddit_proto.ConvertLineToProto(inputBytes)
 
 					if worked {
 						data = append(data, delim)
 						_, b := outWriter.Write(data)
-						log.Errorf("%v", data)
 						if b != nil {
 							log.Fatal(b)
 						}
@@ -61,12 +61,18 @@ func main() {
 				}
 			case "proto":
 				var inputBytes, err = inFileReader.ReadBytes(200)
-				if err != nil {
+				if err == nil {
 					/* Here we read some lines and then convert them. */
-					log.Info("Converting a line from Proto to JSON")
-					log.Infof("%v", inputBytes)
+					comment := &reddit_proto.Comment{}
+					unmarshalerr := proto.Unmarshal(inputBytes[:len(inputBytes)-1], comment)
+					if unmarshalerr == nil {
+						// no errors, great, export json
+					} else {
+						log.Errorf("Could not parse: %s", unmarshalerr)
+					}
+
 				} else {
-					log.Errorf("File Error: %s", err) // maybe we are in an IO error?
+					log.Errorf("File Error: %s %v", err, inputBytes) // maybe we are in an IO error?
 					break
 				}
 			}

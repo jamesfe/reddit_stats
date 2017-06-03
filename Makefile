@@ -9,11 +9,16 @@ rbuild:
 	make proto
 	go build -o reddit_stats -race
 
+# Convert a file, then return it to JSON
 .PHONY: tinytest
 tinytest:
-	time ./convert --input ~/PersCode/reddit_donald/data/RC_2016-04.gz --outdir ./protoout/ --from json --numlines 5
-	# time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03.gz --cv 1 --maxlines 3 --purpose simple --informat json
-	time ./reddit_stats --filename ./protoout/RC_2016-04.gz.protodata --cv 1 --maxlines 5 --informat proto
+	./convert --input ~/PersCode/reddit_donald/data/RC_2016-04.gz --outdir ./protoout/ --from json --numlines 5
+	./convert --input ./protoout/RC_2016-04.gz.protodata.gz --outdir ./protoout/ --from proto --numlines 5
+
+# Convert an entire file
+.PHONY: fullconvert
+fullconvert:
+	time ./convert --input ~/PersCode/reddit_donald/data/RC_2016-01.gz --outdir ./protoout/ --from json --numlines 1000000000
 
 .PHONY: smalltest
 smalltest:
