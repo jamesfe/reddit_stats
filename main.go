@@ -8,6 +8,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/jamesfe/reddit_stats/data_types"
+	"github.com/jamesfe/reddit_stats/protoanalysis"
 	"github.com/jamesfe/reddit_stats/reddit_proto"
 	"github.com/op/go-logging"
 )
@@ -26,6 +28,7 @@ func main() {
 	maxLines := flag.Int("maxlines", 0, "max lines to read")
 	purpose := flag.String("purpose", "simple", "purpose: simple or proto")
 	outputDir := flag.String("output", "", "output directory")
+	inputFormat := flag.String("informat", "json", "input type: json or proto")
 
 	flag.Parse()
 	if *purpose == "proto" && *outputDir == "" {
@@ -36,7 +39,7 @@ func main() {
 	filesToCheck := getFilesToCheck(*filename)
 
 	var lines int = 0
-	var resultItem AuthorDateTuple // we reuse this address for results
+	var resultItem data_types.AuthorDateTuple // we reuse this address for results
 	far := make(map[string]map[string]int)
 
 	log.Infof("Entering analysis stream.")
@@ -45,21 +48,31 @@ func main() {
 		defer f()
 		outWriter, flushNClose := getFileWriter(file, *outputDir)
 		defer flushNClose()
+		var delim byte = 200
 		for lines = lines; lines < *maxLines; lines++ {
 			if lines%*checkInterval == 0 {
 				log.Debugf("Read %d lines", lines)
 			}
-			var jsonBytes, err = inFileReader.ReadBytes('\n')
+			var inputBytes, err = inFileReader.ReadBytes('\n')
 			if err == nil { // really trying to isolate the business code right here so we can call one or two functions.
 				switch *purpose {
 				case "simple":
-					if AuthorSingleLine(jsonBytes, &resultItem) {
-						AggregateAuthorLine(&resultItem, &far)
+					switch *inputFormat {
+					case "json":
+						if AuthorSingleLine(inputBytes, &resultItem) {
+							AggregateAuthorLine(&resultItem, &far)
+						}
+					case "proto":
+						if protoanalysis.ProtoSingleLineAnalysis(inputBytes, &resultItem) {
+							AggregateAuthorLine(&resultItem, &far)
+						}
 					}
 				case "proto":
-					data, worked := reddit_proto.ConvertLineToProto(jsonBytes)
+					data, worked := reddit_proto.ConvertLineToProto(inputBytes)
+
 					if worked {
-						_, b := outWriter.Write(data)
+						_, b := outWriter.Write(append(data, delim))
+						log.Errorf("%v", append(data, delim))
 						if b != nil {
 							log.Fatal(b)
 						}
