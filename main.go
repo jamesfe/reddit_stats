@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"os"
 	"time"
 
 	"github.com/jamesfe/reddit_stats/data_types"
@@ -25,15 +24,9 @@ func main() {
 	filename := flag.String("filename", "", "input filename")
 	checkInterval := flag.Int("cv", 1000000, "check value")
 	maxLines := flag.Int("maxlines", 0, "max lines to read")
-	purpose := flag.String("purpose", "simple", "purpose: simple or proto")
-	outputDir := flag.String("output", "", "output directory")
 	inputFormat := flag.String("informat", "json", "input type: json or proto")
 
 	flag.Parse()
-	if *purpose == "proto" && *outputDir == "" {
-		log.Errorf("Must provide output directory for proto conversion.")
-		os.Exit(1)
-	}
 
 	filesToCheck := getFilesToCheck(*filename)
 
@@ -51,19 +44,15 @@ func main() {
 			}
 			var inputBytes, err = inFileReader.ReadBytes('\n')
 			if err == nil { // really trying to isolate the business code right here so we can call one or two functions.
-				switch *purpose {
-				case "simple":
-					switch *inputFormat {
-					case "json":
-						if AuthorSingleLine(inputBytes, &resultItem) {
-							AggregateAuthorLine(&resultItem, &far)
-						}
-					case "proto":
-						if protoanalysis.ProtoSingleLineAnalysis(inputBytes, &resultItem) {
-							AggregateAuthorLine(&resultItem, &far)
-						}
+				switch *inputFormat {
+				case "json":
+					if AuthorSingleLine(inputBytes, &resultItem) {
+						AggregateAuthorLine(&resultItem, &far)
 					}
 				case "proto":
+					if protoanalysis.ProtoSingleLineAnalysis(inputBytes, &resultItem) {
+						AggregateAuthorLine(&resultItem, &far)
+					}
 				}
 			} else {
 				log.Errorf("File Error: %s", err) // maybe we are in an IO error?
