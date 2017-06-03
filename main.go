@@ -10,11 +10,10 @@ import (
 
 	"github.com/jamesfe/reddit_stats/data_types"
 	"github.com/jamesfe/reddit_stats/protoanalysis"
-	"github.com/jamesfe/reddit_stats/reddit_proto"
 	"github.com/op/go-logging"
 )
 
-var log = logging.MustGetLogger("creepypacket")
+var log = logging.MustGetLogger("reddit_stats")
 var format = logging.MustStringFormatter(
 	`%{color}%{time:15:04:05.000} %{shortfunc} ▶ %{level:.8s} %{id:03x}%{color:reset} %{message}`,
 )
@@ -46,9 +45,6 @@ func main() {
 	for _, file := range filesToCheck {
 		inFileReader, f := getFileReader(file)
 		defer f()
-		outWriter, flushNClose := getFileWriter(file, *outputDir)
-		defer flushNClose()
-		var delim byte = 200
 		for lines = lines; lines < *maxLines; lines++ {
 			if lines%*checkInterval == 0 {
 				log.Debugf("Read %d lines", lines)
@@ -68,17 +64,6 @@ func main() {
 						}
 					}
 				case "proto":
-					data, worked := reddit_proto.ConvertLineToProto(inputBytes)
-
-					if worked {
-						_, b := outWriter.Write(append(data, delim))
-						log.Errorf("%v", append(data, delim))
-						if b != nil {
-							log.Fatal(b)
-						}
-					} else {
-						log.Errorf("errors!")
-					}
 				}
 			} else {
 				log.Errorf("File Error: %s", err) // maybe we are in an IO error?

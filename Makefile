@@ -2,6 +2,7 @@
 build:
 	make proto
 	go build -o reddit_stats
+	go build -o convert ./src/cmd/convert
 
 .PHONY: rbuild
 rbuild:
