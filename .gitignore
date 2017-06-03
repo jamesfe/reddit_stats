@@ -1,4 +1,4 @@
-
+convert
 reddit_stats
 main
 data/
@@ -6,4 +6,5 @@ data/
 *.swo
 *.json
 test_data/
-
+protoout/
+*.protodata

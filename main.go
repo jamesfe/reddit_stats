@@ -7,10 +7,12 @@ import (
 	"io/ioutil"
 	"time"
 
+	"github.com/jamesfe/reddit_stats/data_types"
+	"github.com/jamesfe/reddit_stats/protoanalysis"
 	"github.com/op/go-logging"
 )
 
-var log = logging.MustGetLogger("creepypacket")
+var log = logging.MustGetLogger("reddit_stats")
 var format = logging.MustStringFormatter(
 	`%{color}%{time:15:04:05.000} %{shortfunc} ▶ %{level:.8s} %{id:03x}%{color:reset} %{message}`,
 )
@@ -22,12 +24,14 @@ func main() {
 	filename := flag.String("filename", "", "input filename")
 	checkInterval := flag.Int("cv", 1000000, "check value")
 	maxLines := flag.Int("maxlines", 0, "max lines to read")
+	inputFormat := flag.String("informat", "json", "input type: json or proto")
+
 	flag.Parse()
 
 	filesToCheck := getFilesToCheck(*filename)
 
 	var lines int = 0
-	var resultItem AuthorDateTuple // we reuse this address for results
+	var resultItem data_types.AuthorDateTuple // we reuse this address for results
 	far := make(map[string]map[string]int)
 
 	log.Infof("Entering analysis stream.")
@@ -38,15 +42,26 @@ func main() {
 			if lines%*checkInterval == 0 {
 				log.Debugf("Read %d lines", lines)
 			}
-			var jsonBytes, err = inFileReader.ReadBytes('\n')
+			var inputBytes, err = inFileReader.ReadBytes('\n')
 			if err == nil { // really trying to isolate the business code right here so we can call one or two functions.
-				if AuthorSingleLine(jsonBytes, &resultItem) {
-					AggregateAuthorLine(&resultItem, &far)
+				switch *inputFormat {
+				case "json":
+					if AuthorSingleLine(inputBytes, &resultItem) {
+						AggregateAuthorLine(&resultItem, &far)
+					}
+				case "proto":
+					if protoanalysis.ProtoSingleLineAnalysis(inputBytes, &resultItem) {
+						AggregateAuthorLine(&resultItem, &far)
+					}
 				}
 			} else {
 				log.Errorf("File Error: %s", err) // maybe we are in an IO error?
 				break
 			}
+		}
+		if lines == *maxLines {
+			log.Infof("Max lines reached")
+			break
 		}
 	}
 

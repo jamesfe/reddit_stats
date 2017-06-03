@@ -5,9 +5,9 @@ Also, analytically I have removed the "[deleted]" author from my analysis since 
 Here are the results of a bigtest:
 
 ```
-~/PersCode/gosource/src/github.com/jamesfe/reddit_stats:jferrara$ make bigtest
+~/PersCode/gosource/src/github.com/jamesfe/reddit_stats:jamesfe$ make bigtest
 time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03 --cv 1000000 --maxlines 10000000
-2017/05/22 08:59:43 reading /Users/jferrara/PersCode/reddit_donald/data/RC_2017-03
+2017/05/22 08:59:43 reading /Users/jamesfe/PersCode/reddit_donald/data/RC_2017-03
 2017/05/22 08:59:43 Entering analysis stream.
 2017/05/22 08:59:43 Read 0 lines
 2017/05/22 08:59:46 Read 1000000 lines
