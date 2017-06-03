@@ -27,7 +27,9 @@ medprototest:
 
 .PHONY: tinytest
 tinytest:
-	time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03.gz --cv 1 --maxlines 10 --purpose simple
+	time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2016-04.gz --cv 1 --maxlines 3 --purpose proto --output ./protoout/
+	# time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03.gz --cv 1 --maxlines 3 --purpose simple --informat json
+	time ./reddit_stats --filename ./protoout/RC_2016-04.gz.protodata --cv 1 --maxlines 3 --purpose simple --informat proto
 
 .PHONY: smalltest
 smalltest:
