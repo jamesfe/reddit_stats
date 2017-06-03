@@ -7,3 +7,4 @@ data/
 *.json
 test_data/
 protoout/
+*.protodata
