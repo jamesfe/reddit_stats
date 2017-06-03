@@ -2,16 +2,14 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/jamesfe/reddit_stats/data_types"
 	"strings"
 	"time"
 )
 
-type AuthorDateTuple struct {
-	AuthorDate string
-	AuthorName string
-}
-
-func AuthorSingleLine(line []byte, result *AuthorDateTuple) bool {
+func AuthorSingleLine(line []byte, result *data_types.AuthorDateTuple) bool {
+	/* Take some bytes, convert them from JSON and return the author and date as a string
+	if they are valid. */
 
 	if isDonaldLite(line) {
 		var rawJsonMap interface{}
@@ -35,7 +33,7 @@ func AuthorSingleLine(line []byte, result *AuthorDateTuple) bool {
 	return false
 }
 
-func AggregateAuthorLine(authorTuple *AuthorDateTuple, resultMap *map[string]map[string]int) {
+func AggregateAuthorLine(authorTuple *data_types.AuthorDateTuple, resultMap *map[string]map[string]int) {
 	/* mutate the map in place with a new result */
 	if (*resultMap)[authorTuple.AuthorDate] != nil {
 		(*resultMap)[authorTuple.AuthorDate][authorTuple.AuthorName] += 1
