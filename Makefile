@@ -20,6 +20,10 @@ tinytest:
 fullconvert:
 	time ./convert --input ~/PersCode/reddit_donald/data/RC_2016-01.gz --outdir ./protoout/ --from json --numlines 1000000000
 
+.PHONY: medconvert
+medconvert:
+	time ./convert --input ~/PersCode/reddit_donald/test_data/1k_sample_data.json.gz --outdir ./protoout/ --from json --numlines 1000000000
+
 .PHONY: smalltest
 smalltest:
 	time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03.gz --cv 10 --maxlines 100

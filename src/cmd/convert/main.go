@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"io"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/jamesfe/reddit_stats/reddit_proto"
@@ -36,7 +37,7 @@ func main() {
 		defer f()
 		outWriter, flushNClose := utils.GetFileWriter(file, *outDir, ending)
 		defer flushNClose()
-
+	lineloop:
 		for lines = lines; lines < *maxLines; lines++ {
 			switch *fromFormat {
 			case "json":
@@ -56,8 +57,10 @@ func main() {
 						log.Errorf("errors writing to file!")
 					}
 				} else {
-					log.Errorf("File Error: %s", err) // maybe we are in an IO error?
-					break
+					if err != io.EOF {
+						log.Errorf("File Error: %s", err) // maybe we are in an IO error?
+					}
+					break lineloop
 				}
 			case "proto":
 				var inputBytes, err = inFileReader.ReadBytes(200)
@@ -73,7 +76,7 @@ func main() {
 
 				} else {
 					log.Errorf("File Error: %s %v", err, inputBytes) // maybe we are in an IO error?
-					break
+					break lineloop
 				}
 			}
 			if lines == *maxLines {

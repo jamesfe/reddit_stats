@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/jamesfe/reddit_stats/data_types"
-	"github.com/jamesfe/reddit_stats/protoanalysis"
+	"github.com/jamesfe/reddit_stats/src/protoanalysis"
 	"github.com/op/go-logging"
 )
 
@@ -27,7 +27,10 @@ func main() {
 	inputFormat := flag.String("informat", "json", "input type: json or proto")
 
 	flag.Parse()
-
+	var delim byte = '\n'
+	if *inputFormat == "proto" {
+		delim = 200
+	}
 	filesToCheck := getFilesToCheck(*filename)
 
 	var lines int = 0
@@ -42,7 +45,7 @@ func main() {
 			if lines%*checkInterval == 0 {
 				log.Debugf("Read %d lines", lines)
 			}
-			var inputBytes, err = inFileReader.ReadBytes('\n')
+			var inputBytes, err = inFileReader.ReadBytes(delim)
 			if err == nil { // really trying to isolate the business code right here so we can call one or two functions.
 				switch *inputFormat {
 				case "json":
