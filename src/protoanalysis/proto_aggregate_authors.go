@@ -24,7 +24,6 @@ func ProtoSingleLineAnalysis(line []byte, result *data_types.AuthorDateTuple) bo
 	if err != nil {
 		log.Errorf("Unmarshall error", err)
 	} else {
-		log.Infof("Proto: %#v", comment)
 		if strings.ToLower(*comment.Subreddit) == "the_donald" {
 			if *comment.CreatedUTC != 0 && *comment.Author != "[deleted]" {
 				result.AuthorName = *comment.Author

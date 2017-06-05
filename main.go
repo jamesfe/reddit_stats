@@ -1,15 +1,19 @@
 package main
 
 import (
+	"encoding/binary"
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"runtime/pprof"
 	"time"
 
+	"github.com/golang/protobuf/proto"
 	"github.com/jamesfe/reddit_stats/data_types"
+	"github.com/jamesfe/reddit_stats/reddit_proto"
 	"github.com/jamesfe/reddit_stats/src/protoanalysis"
 	"github.com/op/go-logging"
 )
@@ -43,36 +47,54 @@ func main() {
 	var delim byte = '\n'
 	if *inputFormat == "proto" {
 		delim = 200
+		log.Infof("Delimiter set")
 	}
 	filesToCheck := getFilesToCheck(*filename)
 
 	var lines int = 0
 	var resultItem data_types.AuthorDateTuple // we reuse this address for results
 	far := make(map[string]map[string]int)
+	size := make([]byte, 4)
 
-	log.Infof("Entering analysis stream.")
+	log.Infof("Entering analysis loop.")
 	for _, file := range filesToCheck {
 		inFileReader, f := getFileReader(file)
 		defer f()
+	lineloop:
 		for lines = lines; lines < *maxLines; lines++ {
 			if lines%*checkInterval == 0 {
 				log.Debugf("Read %d lines", lines)
 			}
-			var inputBytes, err = inFileReader.ReadBytes(delim)
-			if err == nil { // really trying to isolate the business code right here so we can call one or two functions.
-				switch *inputFormat {
-				case "json":
-					if AuthorSingleLine(inputBytes, &resultItem) {
-						AggregateAuthorLine(&resultItem, &far)
-					}
-				case "proto":
-					if protoanalysis.ProtoSingleLineAnalysis(inputBytes, &resultItem) {
-						AggregateAuthorLine(&resultItem, &far)
-					}
+			switch *inputFormat {
+			case "json":
+				if inputBytes, err := inFileReader.ReadBytes(delim); err != nil {
+					log.Errorf("File Error: %s", err) // maybe we are in an IO error?
+					break lineloop
+				} else if AuthorSingleLine(inputBytes, &resultItem) {
+					AggregateAuthorLine(&resultItem, &far)
 				}
-			} else {
-				log.Errorf("File Error: %s", err) // maybe we are in an IO error?
-				break
+			case "proto":
+				// some hacking here to find three of our delimeters
+				if _, sizeErr := io.ReadFull(inFileReader, size); sizeErr != nil {
+					log.Errorf("Size Request Error: %s", sizeErr)
+					break
+				}
+				dataSize := binary.LittleEndian.Uint32(size)
+				readerBuf := make([]byte, dataSize)
+				if _, err := io.ReadFull(inFileReader, readerBuf); err != nil {
+					log.Errorf("Message read error: %s", err)
+					break
+				}
+				/* Here we read some lines and then convert them. */
+				comment := &reddit_proto.Comment{}
+				unmarshalerr := proto.Unmarshal(readerBuf, comment)
+				if unmarshalerr == nil {
+					if protoanalysis.ProtoSingleLineAnalysis(readerBuf, &resultItem) {
+						AggregateAuthorLine(&resultItem, &far)
+					}
+				} else {
+					log.Errorf("Could not parse: %s", unmarshalerr)
+				}
 			}
 		}
 		if lines == *maxLines {

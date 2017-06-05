@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/binary"
 	"flag"
 	"io"
 
@@ -31,6 +32,8 @@ func main() {
 
 	flag.Parse()
 	var lines int = 0
+	size := make([]byte, 4)
+
 	filesToCheck := utils.GetFilesToCheck(*fromFile)
 	for _, file := range filesToCheck {
 		inFileReader, f := utils.GetFileReader(file)
@@ -41,14 +44,15 @@ func main() {
 		for lines = lines; lines < *maxLines; lines++ {
 			switch *fromFormat {
 			case "json":
-				var delim byte = 200
 				var inputBytes, err = inFileReader.ReadBytes('\n')
 				if err == nil {
 					/* Here we read some lines and then convert them. */
 					data, worked := reddit_proto.ConvertLineToProto(inputBytes)
-
 					if worked {
-						data = append(data, delim)
+						// We put the size of the message here and then read it specially later.
+						size := make([]byte, 4)
+						binary.LittleEndian.PutUint32(size, uint32(len(data)))
+						data = append(size, data...)
 						_, b := outWriter.Write(data)
 						if b != nil {
 							log.Fatal(b)
@@ -58,25 +62,32 @@ func main() {
 					}
 				} else {
 					if err != io.EOF {
-						log.Errorf("File Error: %s", err) // maybe we are in an IO error?
+						log.Errorf("File Error: %s", err)
 					}
 					break lineloop
 				}
 			case "proto":
-				var inputBytes, err = inFileReader.ReadBytes(200)
-				if err == nil {
-					/* Here we read some lines and then convert them. */
-					comment := &reddit_proto.Comment{}
-					unmarshalerr := proto.Unmarshal(inputBytes[:len(inputBytes)-1], comment)
-					if unmarshalerr == nil {
-						// no errors, great, export json
+				/* This is more difficult, we have to read a big proto object */
+				_, sizeErr := io.ReadFull(inFileReader, size)
+				if sizeErr == nil {
+					dataSize := binary.LittleEndian.Uint32(size)
+					readerBuf := make([]byte, dataSize)
+					_, err := io.ReadFull(inFileReader, readerBuf) // put the message of size X in the buf
+					if err == nil {
+						/* Here we read some lines and then convert them. */
+						comment := &reddit_proto.Comment{}
+						unmarshalerr := proto.Unmarshal(readerBuf, comment)
+						if unmarshalerr == nil {
+							// Success, we did it
+						} else {
+							log.Errorf("Could not parse: %s", unmarshalerr)
+						}
 					} else {
-						log.Errorf("Could not parse: %s", unmarshalerr)
+						log.Errorf("Message read error: %s", err)
 					}
-
 				} else {
-					log.Errorf("File Error: %s %v", err, inputBytes) // maybe we are in an IO error?
-					break lineloop
+					log.Errorf("Size Request Error: %s", sizeErr)
+					// there has been an error reading the size
 				}
 			}
 			if lines == *maxLines {
