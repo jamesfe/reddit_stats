@@ -10,10 +10,11 @@ rbuild:
 	go build -o reddit_stats -race
 
 # Convert a file, then return it to JSON
+TINYLINES=1000
 .PHONY: tinytest
 tinytest:
-	./convert --input ~/PersCode/reddit_donald/data/RC_2016-04.gz --outdir ./protoout/ --from json --numlines 5
-	./convert --input ./protoout/RC_2016-04.gz.protodata.gz --outdir ./protoout/ --from proto --numlines 5
+	./convert --input ~/PersCode/reddit_donald/data/RC_2016-04.gz --outdir ./protoout/ --from json --numlines $(TINYLINES)
+	./convert --input ./protoout/RC_2016-04.gz.protodata.gz --outdir ./protoout/ --from proto --numlines $(TINYLINES)
 
 # Convert an entire file
 .PHONY: fullconvert
@@ -22,7 +23,20 @@ fullconvert:
 
 .PHONY: medconvert
 medconvert:
-	time ./convert --input ~/PersCode/reddit_donald/test_data/1k_sample_data.json.gz --outdir ./protoout/ --from json --numlines 1000000000
+	time ./convert --input ~/PersCode/reddit_donald/test_data/1m_sample_data.json.gz --outdir ./protoout/ --from json --numlines 1000000000
+
+VALS=1000000
+CV=100000
+
+.PHONY: compareanalysis
+compareanalysis:
+	time ./reddit_stats --filename ~/PersCode/reddit_donald/test_data/1m_sample_data.json.gz --cv $(CV) --maxlines $(VALS) --informat json
+	time ./reddit_stats --filename ~/PersCode/reddit_stats/protoout/1m_sample_data.json.gz.protodata.gz --cv $(CV) --maxlines $(VALS) --informat proto
+
+.PHONY: compareanalysis2
+compareanalysis2:
+	time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2016-01.gz --cv $(CV) --maxlines $(VALS) --informat json
+	time ./reddit_stats --filename ~/PersCode/reddit_stats/protoout/RC_2016-01.gz.protodata.gz --cv $(CV) --maxlines $(VALS) --informat proto
 
 .PHONY: smalltest
 smalltest:
