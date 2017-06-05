@@ -5,6 +5,8 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"os"
+	"runtime/pprof"
 	"time"
 
 	"github.com/jamesfe/reddit_stats/data_types"
@@ -25,6 +27,17 @@ func main() {
 	checkInterval := flag.Int("cv", 1000000, "check value")
 	maxLines := flag.Int("maxlines", 0, "max lines to read")
 	inputFormat := flag.String("informat", "json", "input type: json or proto")
+	cpuprofile := flag.String("cpuprofile", "", "write cpu profile to file")
+
+	flag.Parse()
+	if *cpuprofile != "" {
+		f, err := os.Create(*cpuprofile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		pprof.StartCPUProfile(f)
+		defer pprof.StopCPUProfile()
+	}
 
 	flag.Parse()
 	var delim byte = '\n'
