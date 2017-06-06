@@ -30,13 +30,19 @@ CV=100000
 
 .PHONY: compareanalysis
 compareanalysis:
-	time ./reddit_stats --filename ~/PersCode/reddit_donald/test_data/1m_sample_data.json.gz --cv $(CV) --maxlines $(VALS) --informat json
-	time ./reddit_stats --filename ~/PersCode/reddit_stats/protoout/1m_sample_data.json.gz.protodata.gz --cv $(CV) --maxlines $(VALS) --informat proto
+	time ./reddit_stats --filename ~/PersCode/reddit_donald/test_data/1m_sample_data.json.gz --cv $(CV) --maxlines $(VALS) --informat json --cpuprofile json_prof.prof
+	time ./reddit_stats --filename ~/PersCode/reddit_stats/protoout/1m_sample_data.json.gz.protodata.gz --cv $(CV) --maxlines $(VALS) --informat proto --cpuprofile proto_prof.prof
 
 .PHONY: compareanalysis2
 compareanalysis2:
 	time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2016-01.gz --cv $(CV) --maxlines $(VALS) --informat json
 	time ./reddit_stats --filename ~/PersCode/reddit_stats/protoout/RC_2016-01.gz.protodata.gz --cv $(CV) --maxlines $(VALS) --informat proto
+
+# Compare unzipped files with speed
+.PHONY: compareunzipped
+compareunzipped:
+	time ./reddit_stats --filename ~/PersCode/reddit_stats/compare/1m_sample_data.json --cv 100000 --maxlines 1000000 --informat json
+	time ./reddit_stats --filename ~/PersCode/reddit_stats/compare/1m_sample_data.json.protodata --cv 100000 --maxlines 1000000 --informat proto
 
 .PHONY: smalltest
 smalltest:

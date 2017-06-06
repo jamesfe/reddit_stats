@@ -25,9 +25,9 @@ func main() {
 	// Right now we only have two formats
 	var ending string
 	if *fromFormat == "json" {
-		ending = "protodata.gz"
+		ending = "protodata"
 	} else {
-		ending = "json.gz"
+		ending = "json"
 	}
 
 	flag.Parse()
@@ -38,7 +38,7 @@ func main() {
 	for _, file := range filesToCheck {
 		inFileReader, f := utils.GetFileReader(file)
 		defer f()
-		outWriter, flushNClose := utils.GetFileWriter(file, *outDir, ending)
+		outWriter, flushNClose := utils.GetBufioFileWriter(file, *outDir, ending)
 		defer flushNClose()
 	lineloop:
 		for lines = lines; lines < *maxLines; lines++ {

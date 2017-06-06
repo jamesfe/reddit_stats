@@ -17,6 +17,19 @@ var format = logging.MustStringFormatter(
 	`%{color}%{time:15:04:05.000} %{shortfunc} ▶ %{level:.8s} %{id:03x}%{color:reset} %{message}`,
 )
 
+func GetBufioFileWriter(inspiration string, outPath string, ending string) (*bufio.Writer, func() error) {
+	outName := filepath.Base(inspiration)
+	newPath := filepath.Join(outPath, outName+"."+ending)
+
+	out, err := os.Create(newPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	writer := bufio.NewWriter(out)
+	return writer, func() error { writer.Flush(); out.Close(); return nil }
+
+}
+
 func GetFileWriter(inspiration string, outPath string, ending string) (*gzip.Writer, func() error) {
 	outName := filepath.Base(inspiration)
 	newPath := filepath.Join(outPath, outName+"."+ending)
