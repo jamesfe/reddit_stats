@@ -1,10 +1,12 @@
-package main
+package analysis
 
 import (
 	"encoding/json"
 	"io"
 	"strings"
 	"time"
+
+	"github.com/jamesfe/reddit_stats/src/utils"
 )
 
 type UniqueAuthorsPerDayResult struct {
@@ -23,7 +25,7 @@ func UniqueAuthorsPerDayAnalysis(parameters SimpleAnalysisParameter) (UniqueAuth
 	results := NewUniqueAuthorsPerDayResult()
 	// TODO: add start and end date to this analysis
 	log.Infof("Reading filename: %s", parameters.Filename)
-	inFileReader, f := getFileReader(parameters.Filename)
+	inFileReader, f := utils.GetFileReader(parameters.Filename)
 	defer f()
 	simpleRes := newSimpleAnalysisResult()
 
@@ -47,7 +49,7 @@ func UniqueAuthorsPerDayAnalysis(parameters SimpleAnalysisParameter) (UniqueAuth
 			looperr = nil
 			break
 		}
-		if isDonaldLite(stuff) {
+		if utils.IsDonaldLite(stuff) {
 			simpleRes.TotalFirstMatches += 1
 			var rawJsonMap interface{}
 			newerr := json.Unmarshal(stuff, &rawJsonMap)

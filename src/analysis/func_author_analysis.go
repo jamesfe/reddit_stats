@@ -1,8 +1,8 @@
-package main
+package analysis
 
 import (
 	"encoding/json"
-	"github.com/jamesfe/reddit_stats/data_types"
+	"github.com/jamesfe/reddit_stats/src/data_types"
 	"strings"
 	"time"
 )

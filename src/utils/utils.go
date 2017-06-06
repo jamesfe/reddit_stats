@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bufio"
+	"bytes"
 	"compress/gzip"
 	"io/ioutil"
 	"os"
@@ -9,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/jamesfe/reddit_stats/src/data_types"
 	"github.com/op/go-logging"
 )
 
@@ -16,6 +18,20 @@ var log = logging.MustGetLogger("reddit_stats_utils")
 var format = logging.MustStringFormatter(
 	`%{color}%{time:15:04:05.000} %{shortfunc} ▶ %{level:.8s} %{id:03x}%{color:reset} %{message}`,
 )
+
+var donaldSubreddit string = "t5_38unr"
+var donaldBytes []byte = []byte(donaldSubreddit)
+
+func IsDonaldLite(data []byte) bool {
+	if bytes.Contains(data, donaldBytes) {
+		return true
+	}
+	return false
+}
+
+func IsDonaldCertainly(comment data_types.Comment) bool {
+	return strings.ToLower(comment.Subreddit) == "the_donald"
+}
 
 func GetBufioFileWriter(inspiration string, outPath string, ending string) (*bufio.Writer, func() error) {
 	outName := filepath.Base(inspiration)

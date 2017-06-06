@@ -6,8 +6,8 @@ import (
 
 	"github.com/golang/protobuf/proto"
 
-	"github.com/jamesfe/reddit_stats/data_types"
 	"github.com/jamesfe/reddit_stats/reddit_proto"
+	"github.com/jamesfe/reddit_stats/src/data_types"
 	"github.com/op/go-logging"
 )
 

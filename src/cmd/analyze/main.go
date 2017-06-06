@@ -12,19 +12,18 @@ import (
 	"time"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/jamesfe/reddit_stats/data_types"
 	"github.com/jamesfe/reddit_stats/reddit_proto"
+	"github.com/jamesfe/reddit_stats/src/analysis"
+	"github.com/jamesfe/reddit_stats/src/data_types"
 	"github.com/jamesfe/reddit_stats/src/protoanalysis"
+	"github.com/jamesfe/reddit_stats/src/utils"
 	"github.com/op/go-logging"
 )
 
-var log = logging.MustGetLogger("reddit_stats")
+var log = logging.MustGetLogger("convert")
 var format = logging.MustStringFormatter(
 	`%{color}%{time:15:04:05.000} %{shortfunc} ▶ %{level:.8s} %{id:03x}%{color:reset} %{message}`,
 )
-
-var donaldSubreddit string = "t5_38unr"
-var donaldBytes []byte = []byte(donaldSubreddit)
 
 func main() {
 	filename := flag.String("filename", "", "input filename")
@@ -49,7 +48,7 @@ func main() {
 		delim = 200
 		log.Infof("Delimiter set")
 	}
-	filesToCheck := getFilesToCheck(*filename)
+	filesToCheck := utils.GetFilesToCheck(*filename)
 
 	var lines int = 0
 	var resultItem data_types.AuthorDateTuple // we reuse this address for results
@@ -58,7 +57,7 @@ func main() {
 
 	log.Infof("Entering analysis loop.")
 	for _, file := range filesToCheck {
-		inFileReader, f := getFileReader(file)
+		inFileReader, f := utils.GetFileReader(file)
 		defer f()
 	lineloop:
 		for lines = lines; lines < *maxLines; lines++ {
@@ -70,8 +69,8 @@ func main() {
 				if inputBytes, err := inFileReader.ReadBytes(delim); err != nil {
 					log.Errorf("File Error: %s", err) // maybe we are in an IO error?
 					break lineloop
-				} else if AuthorSingleLine(inputBytes, &resultItem) {
-					AggregateAuthorLine(&resultItem, &far)
+				} else if analysis.AuthorSingleLine(inputBytes, &resultItem) {
+					analysis.AggregateAuthorLine(&resultItem, &far)
 				}
 			case "proto":
 				// some hacking here to find three of our delimeters

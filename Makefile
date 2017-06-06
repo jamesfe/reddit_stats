@@ -1,7 +1,7 @@
 .PHONY: build
 build:
 	make proto
-	go build -o reddit_stats
+	go build -o reddit_stats ./src/cmd/analyze
 	go build -o convert ./src/cmd/convert
 
 .PHONY: rbuild
