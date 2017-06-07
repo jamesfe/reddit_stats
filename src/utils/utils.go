@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/jamesfe/reddit_stats/src/data_types"
@@ -18,6 +19,25 @@ var log = logging.MustGetLogger("reddit_stats_utils")
 var format = logging.MustStringFormatter(
 	`%{color}%{time:15:04:05.000} %{shortfunc} ▶ %{level:.8s} %{id:03x}%{color:reset} %{message}`,
 )
+
+func GetIntTimestamp(v interface{}) int {
+	/* Sometimes the timestamps we get are float64, null, or strings. Here we check. */
+	var retVal int = 0
+	switch v.(type) {
+	case float64:
+		retVal = int(v.(float64))
+	case string:
+		parsed, err := strconv.ParseInt(v.(string), 10, 32)
+		if err != nil {
+			retVal = 0
+		} else {
+			retVal = int(parsed)
+		}
+	default:
+		retVal = 0
+	}
+	return retVal
+}
 
 var donaldSubreddit string = "t5_38unr"
 var donaldBytes []byte = []byte(donaldSubreddit)

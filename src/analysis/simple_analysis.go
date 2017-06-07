@@ -1,7 +1,5 @@
 package analysis
 
-import "encoding/json"
-
 func newSimpleAnalysisResult() SimpleAnalysisResult {
 	return (SimpleAnalysisResult{TotalMatches: 0, TotalFirstMatches: 0, TotalLinesChecked: 0})
 }
@@ -20,8 +18,9 @@ type SimpleAnalysisParameter struct {
 	Filename                 string
 }
 
+/* Opens the file, reads it, counts some things up and returns a set of results.  */
+/*
 func SimpleFileAnalysis(parameters SimpleAnalysisParameter) (SimpleAnalysisResult, error) {
-	/* Opens the file, reads it, counts some things up and returns a set of results.  */
 	inFileReader, f := getFileReader(parameters.Filename)
 	defer f()
 	results := newSimpleAnalysisResult()
@@ -54,3 +53,4 @@ func SimpleFileAnalysis(parameters SimpleAnalysisParameter) (SimpleAnalysisResul
 	}
 	return results, nil
 }
+*/

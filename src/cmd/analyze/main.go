@@ -89,7 +89,7 @@ func main() {
 				unmarshalerr := proto.Unmarshal(readerBuf, comment)
 				if unmarshalerr == nil {
 					if protoanalysis.ProtoSingleLineAnalysis(readerBuf, &resultItem) {
-						AggregateAuthorLine(&resultItem, &far)
+						analysis.AggregateAuthorLine(&resultItem, &far)
 					}
 				} else {
 					log.Errorf("Could not parse: %s", unmarshalerr)

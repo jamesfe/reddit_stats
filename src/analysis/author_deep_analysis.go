@@ -1,12 +1,5 @@
 package analysis
 
-import (
-	"encoding/json"
-	"io"
-	"strings"
-	"time"
-)
-
 /*
 We need to do some things:
 1. Find all the authors who are the_donald commenters
@@ -17,10 +10,11 @@ We need to do some things:
 Single Pass:
 1. List of authors per day in the_donald, plus number of comments per day per author
 
-
 2. List of authors and their subreddits, per week
 */
 
+/* Returns a map o fstrings to strings to ints: date->author->count */
+/*
 func AuthorDeepAnalysis(parameters SimpleAnalysisParameter) (map[string]map[string]int, error) {
 
 	// Author count per day
@@ -87,3 +81,4 @@ func AuthorDeepAnalysis(parameters SimpleAnalysisParameter) (map[string]map[stri
 	// This is where we build the list of counts
 	return countPerDay, looperr
 }
+*/
