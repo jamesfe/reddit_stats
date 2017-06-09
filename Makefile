@@ -1,48 +1,10 @@
 .PHONY: build
 build:
-	make proto
 	go build -o reddit_stats ./src/cmd/analyze
-	go build -o convert ./src/cmd/convert
 
 .PHONY: rbuild
 rbuild:
-	make proto
-	go build -o reddit_stats -race
-
-# Convert a file, then return it to JSON
-TINYLINES=1000
-.PHONY: tinytest
-tinytest:
-	./convert --input ~/PersCode/reddit_donald/data/RC_2016-04.gz --outdir ./protoout/ --from json --numlines $(TINYLINES)
-	./convert --input ./protoout/RC_2016-04.gz.protodata.gz --outdir ./protoout/ --from proto --numlines $(TINYLINES)
-
-# Convert an entire file
-.PHONY: fullconvert
-fullconvert:
-	time ./convert --input ~/PersCode/reddit_donald/data/RC_2016-01.gz --outdir ./protoout/ --from json --numlines 1000000000
-
-.PHONY: medconvert
-medconvert:
-	time ./convert --input ~/PersCode/reddit_donald/test_data/1m_sample_data.json.gz --outdir ./protoout/ --from json --numlines 1000000000
-
-VALS=1000000
-CV=100000
-
-.PHONY: compareanalysis
-compareanalysis:
-	time ./reddit_stats --filename ~/PersCode/reddit_donald/test_data/1m_sample_data.json.gz --cv $(CV) --maxlines $(VALS) --informat json --cpuprofile json_prof.prof
-	time ./reddit_stats --filename ~/PersCode/reddit_stats/protoout/1m_sample_data.json.gz.protodata.gz --cv $(CV) --maxlines $(VALS) --informat proto --cpuprofile proto_prof.prof
-
-.PHONY: compareanalysis2
-compareanalysis2:
-	time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2016-01.gz --cv $(CV) --maxlines $(VALS) --informat json
-	time ./reddit_stats --filename ~/PersCode/reddit_stats/protoout/RC_2016-01.gz.protodata.gz --cv $(CV) --maxlines $(VALS) --informat proto
-
-# Compare unzipped files with speed
-.PHONY: compareunzipped
-compareunzipped:
-	time ./reddit_stats --filename ~/PersCode/reddit_stats/compare/1m_sample_data.json --cv 100000 --maxlines 1000000 --informat json
-	time ./reddit_stats --filename ~/PersCode/reddit_stats/compare/1m_sample_data.json.protodata --cv 100000 --maxlines 1000000 --informat proto
+	go build -o reddit_stats ./src/cmd/analyze
 
 .PHONY: smalltest
 smalltest:
@@ -62,8 +24,3 @@ bigtest:
 .PHONY: dirtest
 dirtest:
 	time ./reddit_stats --filename ~/PersCode/reddit_donald/dir_test/ -cv 100 --maxlines 1000
-
-
-.PHONY: proto
-proto:
-	protoc --go_out=./ ./reddit_proto/*.proto
