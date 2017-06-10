@@ -102,6 +102,12 @@ func main() {
 		}
 	}
 
+	// aggregate things
+	/*
+		1. For each day, total the number of deleted and non-deleted
+		2. Output this map to JSON
+		3. Probably do it in a function, pass by reference
+	*/
 	apd, marshallErr := json.Marshal(far)
 	if marshallErr == nil {
 		outputFilename := fmt.Sprintf("./output/output_%d.json", time.Now().Unix())
