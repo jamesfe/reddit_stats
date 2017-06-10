@@ -24,3 +24,9 @@ type Comment struct {
 	// Subreddit_id string `json:"subreddit_id"`
 	// Ups          int    `json:"ups"`
 }
+
+type DeletedTuple struct {
+	TodayTotal int `json:"total_not_deleted"`
+	Deleted    int `json:"total_deleted"`
+	Total      int `json:"total"`
+}

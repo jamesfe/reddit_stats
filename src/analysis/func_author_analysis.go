@@ -22,7 +22,7 @@ func AuthorSingleLine(line []byte, result *data_types.AuthorDateTuple) bool {
 			if strings.ToLower(subreddit) == "the_donald" {
 				result.AuthorName = v["author"].(string)
 				realTime := utils.GetIntTimestamp(v["created_utc"])
-				if realTime != 0 && result.AuthorName != "[deleted]" { // if it is junk, don't record
+				if realTime != 0 { // if it is junk, don't record
 					result.AuthorDate = time.Unix(int64(realTime), 0).Format("02-01-2006")
 					return true
 				}

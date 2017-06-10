@@ -42,6 +42,8 @@ func main() {
 
 	var lines int = 0
 	var resultItem data_types.AuthorDateTuple // we reuse this address for results
+
+	// Represents day -> author -> posts
 	far := make(map[string]map[string]int)
 
 	log.Infof("Entering analysis loop.")
@@ -72,7 +74,31 @@ func main() {
 		2. Output this map to JSON
 		3. Probably do it in a function, pass by reference
 	*/
-	apd, marshallErr := json.Marshal(far)
+
+	// foreach is index, data
+
+	var today_sum int
+	var deleted_sum int
+	var total_sum int
+	outputMap := make(map[string]data_types.DeletedTuple)
+	for key, element := range far {
+		today_sum = 0
+		deleted_sum = 0
+		for author, count := range element {
+			if author != "[deleted]" {
+				today_sum += count
+			} else {
+				deleted_sum = count
+			}
+		}
+		total_sum = today_sum + deleted_sum
+		d := &data_types.DeletedTuple{TodayTotal: today_sum, Deleted: deleted_sum, Total: total_sum}
+		outputMap[key] = *d
+		// probably unnecessary but:
+		log.Infof("Total: %d Deleted %d", today_sum, deleted_sum)
+	}
+
+	apd, marshallErr := json.Marshal(outputMap)
 	if marshallErr == nil {
 		outputFilename := fmt.Sprintf("./output/output_%d.json", time.Now().Unix())
 		ioutil.WriteFile(outputFilename, apd, 0644)
