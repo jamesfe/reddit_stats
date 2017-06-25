@@ -11,7 +11,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/jamesfe/reddit_stats/src/data_types"
 	"github.com/op/go-logging"
@@ -53,7 +52,6 @@ func IsDonaldLite(data []byte) bool {
 
 func IsRandomSample(percentTrue float32) bool {
 	/* given the percent value we are given, return true if that percent hits randomly. */
-	rand.Seed(time.Now().UTC().UnixNano())
 	val := rand.Float32()
 	if val*100 < percentTrue {
 		return true

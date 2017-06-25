@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"runtime/pprof"
 	"time"
@@ -21,6 +22,8 @@ var format = logging.MustStringFormatter(
 )
 
 func main() {
+	rand.Seed(time.Now().UTC().UnixNano())
+
 	filename := flag.String("filename", "", "input filename")
 	checkInterval := flag.Int("cv", 1000000, "check value")
 	maxLines := flag.Int("maxlines", 0, "max lines to read")
