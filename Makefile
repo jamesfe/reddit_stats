@@ -2,10 +2,6 @@
 build:
 	go build -o reddit_stats ./src/cmd/analyze
 
-.PHONY: rbuild
-rbuild:
-	go build -o reddit_stats ./src/cmd/analyze
-
 .PHONY: smalltest
 smalltest:
 	time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03.gz --cv 10 --maxlines 100
