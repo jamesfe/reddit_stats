@@ -66,7 +66,12 @@ func IsDonaldCertainly(comment data_types.Comment) bool {
 
 func GetBufioFileWriter(inspiration string, outPath string, ending string) (*bufio.Writer, func() error) {
 	outName := filepath.Base(inspiration)
-	newPath := filepath.Join(outPath, outName+"."+ending)
+	var newPath string = ""
+	if ending != "" {
+		newPath = filepath.Join(outPath, outName+"."+ending)
+	} else {
+		newPath = filepath.Join(outPath, outName)
+	}
 
 	out, err := os.Create(newPath)
 	if err != nil {
@@ -74,20 +79,34 @@ func GetBufioFileWriter(inspiration string, outPath string, ending string) (*buf
 	}
 	writer := bufio.NewWriter(out)
 	return writer, func() error { writer.Flush(); out.Close(); return nil }
-
 }
 
 func GetFileWriter(inspiration string, outPath string, ending string) (*gzip.Writer, func() error) {
 	outName := filepath.Base(inspiration)
-	newPath := filepath.Join(outPath, outName+"."+ending)
+	var newPath string = ""
+	if ending != "" {
+		newPath = filepath.Join(outPath, outName+"."+ending)
+	} else {
+		newPath = filepath.Join(outPath, outName)
+	}
 
 	out, err := os.Create(newPath)
 	if err != nil {
 		log.Fatal(err)
 	}
 	writer := gzip.NewWriter(out)
-	return writer, func() error { writer.Flush(); out.Close(); return nil }
-
+	return writer, func() error {
+		log.Debugf("Closing and flushing.")
+		e := writer.Flush()
+		if e != nil {
+			log.Errorf("Flush error: %s", e)
+		}
+		f := out.Close()
+		if f != nil {
+			log.Error("Close Error: %s", f)
+		}
+		return nil
+	}
 }
 
 func GetFileReader(filename string) (*bufio.Reader, func() error) {

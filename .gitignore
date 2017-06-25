@@ -1,6 +1,7 @@
 *.prof
 convert
 reddit_stats
+reddit_filter
 main
 data/
 *.swp
@@ -8,4 +9,5 @@ data/
 *.json
 test_data/
 protoout/
+filters/
 *.protodata

@@ -39,7 +39,6 @@ func main() {
 		defer pprof.StopCPUProfile()
 	}
 
-	flag.Parse()
 	var delim byte = '\n'
 	filesToCheck := utils.GetFilesToCheck(*filename)
 
