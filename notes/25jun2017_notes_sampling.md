@@ -22,6 +22,9 @@ func IsRandomSample(percentTrue float32) bool {
 Seeding the random number generator **every time**!?  Are you crazy?  Yes, I was.  What a horrid mistake.  Don't do this.  I profiled the program before and after doing this and it turns out the CPU spend 8.85s/56.99s just seeding the random number generator. 
 
 You can see the profiles for this here:
-(profiling just checking if it's an /r/the_donald post)[./profiles/checking_reddit_is_the_donald_profile.svg]
-(profiling while seeding every time)[.profiles/checking_random_sample_profile.svg]
-(profiling with refactored seeding)[./profiles/checking_randoms_seeded_once_profile.svg]
+
+[profiling just checking if it's an /r/the_donald post](./profiles/checking_reddit_is_the_donald_profile.svg)
+
+[profiling while seeding every time](.profiles/checking_random_sample_profile.svg)
+
+[profiling with refactored seeding](./profiles/checking_randoms_seeded_once_profile.svg)
