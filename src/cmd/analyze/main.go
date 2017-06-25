@@ -48,6 +48,7 @@ func main() {
 
 	log.Infof("Entering analysis loop.")
 	for _, file := range filesToCheck {
+		log.Debugf("Reading %s", file)
 		inFileReader, f := utils.GetFileReader(file)
 		defer f()
 	lineloop:
