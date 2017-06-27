@@ -71,20 +71,28 @@ func main() {
 		}
 	}
 
-	// aggregate things
-	/*
-		1. For each day, total the number of deleted and non-deleted
-		2. Output this map to JSON
-		3. Probably do it in a function, pass by reference
-	*/
+	// Now we can aggregate differently.
+	outputMap := AggregateByDeletedCommentCounts(far)
 
-	// foreach is index, data
+	// JSON Output
+	apd, marshallErr := json.Marshal(outputMap)
+	if marshallErr == nil {
+		outputFilename := fmt.Sprintf("./output/output_%d.json", time.Now().Unix())
+		ioutil.WriteFile(outputFilename, apd, 0644)
+		// log.Infof("JSON Output: %s", apd)
+		log.Infof("Output written to %s", outputFilename)
+	} else {
+		log.Errorf("Error parsing output JSON: %s", marshallErr)
+	}
+}
 
+func AggregateByDeletedCommentCounts(analysisResults map[string]map[string]int) map[string]data_types.DeletedTuple {
+	/* Count up the number of deleted, total, and not-deleted comments per time period and return them in a map. */
 	var today_sum int
 	var deleted_sum int
 	var total_sum int
 	outputMap := make(map[string]data_types.DeletedTuple)
-	for key, element := range far {
+	for key, element := range analysisResults {
 		today_sum = 0
 		deleted_sum = 0
 		for author, count := range element {
@@ -100,14 +108,5 @@ func main() {
 		// probably unnecessary but:
 		log.Infof("Total: %d Deleted %d", today_sum, deleted_sum)
 	}
-
-	apd, marshallErr := json.Marshal(outputMap)
-	if marshallErr == nil {
-		outputFilename := fmt.Sprintf("./output/output_%d.json", time.Now().Unix())
-		ioutil.WriteFile(outputFilename, apd, 0644)
-		// log.Infof("JSON Output: %s", apd)
-		log.Infof("Output written to %s", outputFilename)
-	} else {
-		log.Errorf("Error parsing output JSON: %s", marshallErr)
-	}
+	return outputMap
 }
