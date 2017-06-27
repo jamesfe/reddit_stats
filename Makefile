@@ -30,3 +30,7 @@ smfilter:
 .PHONY: filterall
 filterall:
 	time ./reddit_filter --filename ~/PersCode/reddit_donald/data/ --cv 1000000 --maxlines 10000000000 --output ./filters/
+
+.PHONY: analyze
+analyze:
+	time ./reddit_stats --filename ~/PersCode/reddit_donald/data/ --cv 1000000 --maxlines 10000000000
