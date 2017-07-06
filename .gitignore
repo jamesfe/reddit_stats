@@ -2,12 +2,14 @@
 convert
 reddit_stats
 reddit_filter
+full_analyze
 main
 data/
 *.swp
 *.swo
-*.json
 test_data/
 protoout/
 filters/
 *.protodata
+*.json
+!meta/top_100_subreddits_jul2017.json

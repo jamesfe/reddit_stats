@@ -2,6 +2,7 @@
 build:
 	go build -o reddit_stats ./src/cmd/analyze
 	go build -o reddit_filter ./src/cmd/filter
+	go build -o full_analyze ./src/cmd/top
 
 .PHONY: smalltest
 smalltest:
