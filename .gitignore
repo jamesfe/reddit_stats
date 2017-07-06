@@ -1,4 +1,5 @@
 *.prof
+full_analyze
 convert
 reddit_stats
 reddit_filter
