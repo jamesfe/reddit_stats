@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"math/rand"
 	"os"
@@ -12,6 +13,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/jamesfe/reddit_stats/src/data_types"
 	"github.com/op/go-logging"
@@ -21,6 +23,17 @@ var log = logging.MustGetLogger("reddit_stats_utils")
 var format = logging.MustStringFormatter(
 	`%{color}%{time:15:04:05.000} %{shortfunc} ▶ %{level:.8s} %{id:03x}%{color:reset} %{message}`,
 )
+
+func GetDayString(input int) string {
+	/* Get the date in DD-MM-YYYY format */
+	return time.Unix(int64(input), 0).Format("02-01-2006")
+}
+
+func GetWeekString(input int) string {
+	/* Return the week of the year in format WW-YYYY. */
+	year, week := time.Unix(int64(input), 0).ISOWeek()
+	return fmt.Sprintf("%d-%d", week, year)
+}
 
 func ReadJsonFile(inFile string, jsontype interface{}) {
 	/* Read a file into an object */

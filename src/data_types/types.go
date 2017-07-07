@@ -1,5 +1,8 @@
 package data_types
 
+// A function that takes a timestamp and returns some string interpretation of it.
+type DateToString func(int) string
+
 type AuthorDateTuple struct {
 	AuthorDate string
 	AuthorName string

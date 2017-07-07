@@ -70,9 +70,8 @@ func main() {
 			if inputBytes, err := inFileReader.ReadBytes(delim); err != nil {
 				log.Errorf("File Error: %s", err) // maybe we are in an IO error?
 				break lineloop
-				// TODO: Change AuthorSingleLine to return subreddit as well
-			} else if analysis.AuthorSingleLine(inputBytes, &resultItem, analysis.GetWeekString) {
-				analysis.AggregateAuthorLine(&resultItem, &far)
+			} else if analysis.AuthorSingleLineMulti(inputBytes, &resultItem, utils.GetWeekString, rmap) {
+				analysis.AggregateAuthorLineMulti(&resultItem, &far)
 			}
 		}
 		if lines == *maxLines {
