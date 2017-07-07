@@ -1,7 +1,16 @@
 package data_types
 
+// A function that takes a timestamp and returns some string interpretation of it.
+type DateToString func(int) string
+
 type AuthorDateTuple struct {
 	AuthorDate string
+	AuthorName string
+}
+
+type AuthorDateSubTuple struct {
+	AuthorDate string
+	SubReddit  string
 	AuthorName string
 }
 
@@ -29,4 +38,12 @@ type DeletedTuple struct {
 	TodayTotal int `json:"total_not_deleted"`
 	Deleted    int `json:"total_deleted"`
 	Total      int `json:"total"`
+}
+
+type DeletedByDate struct {
+	Dates map[string]DeletedTuple `json:"dates"`
+}
+
+type DeletedByDateAndReddit struct {
+	Reddits map[string]DeletedByDate `json:"reddits"`
 }

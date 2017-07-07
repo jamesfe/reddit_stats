@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"os"
 	"runtime/pprof"
+	"strings"
 	"time"
 
 	"github.com/jamesfe/reddit_stats/src/analysis"
@@ -20,6 +21,18 @@ var log = logging.MustGetLogger("convert")
 var format = logging.MustStringFormatter(
 	`%{color}%{time:15:04:05.000} %{shortfunc} ▶ %{level:.8s} %{id:03x}%{color:reset} %{message}`,
 )
+
+type JSONList struct {
+	Items []string `json:"items"`
+}
+
+func makeRedditMap(items []string) map[string]bool {
+	retVals := make(map[string]bool)
+	for _, val := range items {
+		retVals[strings.ToLower(val)] = true
+	}
+	return retVals
+}
 
 func main() {
 	rand.Seed(time.Now().UTC().UnixNano())
@@ -39,14 +52,19 @@ func main() {
 		defer pprof.StopCPUProfile()
 	}
 
+	var targetReddits JSONList
+	// TODO: Make this part of config
+	utils.ReadJsonFile("./meta/top_100_subreddits_jul2017.json", &targetReddits)
+	rmap := makeRedditMap(targetReddits.Items)
+
 	var delim byte = '\n'
 	filesToCheck := utils.GetFilesToCheck(*filename)
 
 	var lines int = 0
-	var resultItem data_types.AuthorDateTuple // we reuse this address for results
+	var resultItem data_types.AuthorDateSubTuple // we reuse this address for results
 
 	// Represents day -> author -> posts
-	far := make(map[string]map[string]int)
+	far := make(map[string]map[string]map[string]int)
 
 	log.Infof("Entering analysis loop.")
 	for _, file := range filesToCheck {
@@ -61,8 +79,8 @@ func main() {
 			if inputBytes, err := inFileReader.ReadBytes(delim); err != nil {
 				log.Errorf("File Error: %s", err) // maybe we are in an IO error?
 				break lineloop
-			} else if analysis.AuthorSingleLine(inputBytes, &resultItem, utils.GetWeekString) {
-				analysis.AggregateAuthorLine(&resultItem, &far)
+			} else if analysis.AuthorSingleLineMulti(inputBytes, &resultItem, utils.GetWeekString, rmap) {
+				analysis.AggregateAuthorLineMulti(&resultItem, &far)
 			}
 		}
 		if lines == *maxLines {
@@ -71,11 +89,15 @@ func main() {
 		}
 	}
 
+	var allResults data_types.DeletedByDateAndReddit
+	allResults.Reddits = make(map[string]data_types.DeletedByDate)
 	// Now we can aggregate differently.
-	outputMap := AggregateByDeletedCommentCounts(far)
+	for key, value := range far { // key here is the reddit and the value is a map of dates
+		allResults.Reddits[key] = AggregateByDeletedCommentCounts(value)
+	}
 
 	// JSON Output
-	apd, marshallErr := json.Marshal(outputMap)
+	apd, marshallErr := json.Marshal(allResults)
 	if marshallErr == nil {
 		outputFilename := fmt.Sprintf("./output/output_%d.json", time.Now().Unix())
 		ioutil.WriteFile(outputFilename, apd, 0644)
@@ -86,7 +108,7 @@ func main() {
 	}
 }
 
-func AggregateByDeletedCommentCounts(analysisResults map[string]map[string]int) map[string]data_types.DeletedTuple {
+func AggregateByDeletedCommentCounts(analysisResults map[string]map[string]int) data_types.DeletedByDate {
 	/* Count up the number of deleted, total, and not-deleted comments per time period and return them in a map. */
 	var today_sum int
 	var deleted_sum int
@@ -108,5 +130,7 @@ func AggregateByDeletedCommentCounts(analysisResults map[string]map[string]int) 
 		// probably unnecessary but:
 		log.Infof("Total: %d Deleted %d", today_sum, deleted_sum)
 	}
-	return outputMap
+	var retVals data_types.DeletedByDate
+	retVals.Dates = outputMap
+	return retVals
 }
