@@ -35,11 +35,12 @@ func AuthorSingleLine(line []byte, result *data_types.AuthorDateTuple, dateAgg d
 	return false
 }
 
-func AggregateAuthorLine(authorTuple *data_types.AuthorDateTuple, resultMap *map[string]map[string]int) {
+func AggregateAuthorLine(res *data_types.AuthorDateTuple, resultMap *map[string]map[string]int) {
 	/* Increment the author's name in the date map by one for each comment he/she has made. */
-	if (*resultMap)[authorTuple.AuthorDate] != nil {
-		(*resultMap)[authorTuple.AuthorDate][authorTuple.AuthorName] += 1
+	if (*resultMap)[res.AuthorDate] != nil {
+		(*resultMap)[res.AuthorDate][res.AuthorName] += 1
 	} else {
-		(*resultMap)[authorTuple.AuthorDate] = make(map[string]int)
+		(*resultMap)[res.AuthorDate] = make(map[string]int)
+		(*resultMap)[res.AuthorDate][res.AuthorName] = 1
 	}
 }
