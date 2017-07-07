@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"os"
 	"runtime/pprof"
+	"strings"
 	"time"
 
 	"github.com/jamesfe/reddit_stats/src/analysis"
@@ -23,6 +24,14 @@ var format = logging.MustStringFormatter(
 
 type JSONList struct {
 	Items []string `json:"items"`
+}
+
+func makeRedditMap(items []string) map[string]bool {
+	retVals := make(map[string]bool)
+	for _, val := range items {
+		retVals[strings.ToLower(val)] = true
+	}
+	return retVals
 }
 
 func main() {
@@ -43,19 +52,18 @@ func main() {
 		defer pprof.StopCPUProfile()
 	}
 
-	var things JSONList
-	utils.ReadJsonFile("./metadata/top_100_subreddits_jul2017.json", &things)
-	log.Infof("%#v", things)
+	var targetReddits JSONList
+	utils.ReadJsonFile("./metadata/top_100_subreddits_jul2017.json", &targetReddits)
+	rmap := makeRedditMap(targetReddits.Items)
 
 	var delim byte = '\n'
 	filesToCheck := utils.GetFilesToCheck(*filename)
 
 	var lines int = 0
-	var resultItem data_types.AuthorDateTuple // we reuse this address for results
+	var resultItem data_types.AuthorDateSubTuple // we reuse this address for results
 
-	// TODO add subreddit ->
 	// Represents day -> author -> posts
-	far := make(map[string]map[string]int)
+	far := make(map[string]map[string]map[string]int)
 
 	log.Infof("Entering analysis loop.")
 	for _, file := range filesToCheck {
@@ -95,7 +103,6 @@ func main() {
 	}
 }
 
-// TODO: Change this to handle multiple subreddits
 func AggregateByDeletedCommentCounts(analysisResults map[string]map[string]int) map[string]data_types.DeletedTuple {
 	/* Count up the number of deleted, total, and not-deleted comments per time period and return them in a map. */
 	var today_sum int

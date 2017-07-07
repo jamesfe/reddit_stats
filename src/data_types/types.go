@@ -8,6 +8,12 @@ type AuthorDateTuple struct {
 	AuthorName string
 }
 
+type AuthorDateSubTuple struct {
+	AuthorDate string
+	SubReddit  string
+	AuthorName string
+}
+
 type Comment struct {
 	Author string `json:"author"`
 	// Author_flair_css_class string `json:"author_flair_css_class "`
