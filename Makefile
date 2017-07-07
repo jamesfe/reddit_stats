@@ -4,6 +4,15 @@ build:
 	go build -o reddit_filter ./src/cmd/filter
 	go build -o full_analyze ./src/cmd/top
 
+.PHONY: smalltestmulti
+smalltestmulti:
+	time ./full_analyze --filename ~/PersCode/reddit_donald/data/RC_2017-03.gz --cv 10 --maxlines 100
+
+.PHONY: medtestmulti
+medtestmulti:
+	time ./full_analyze --filename ~/PersCode/reddit_donald/data/RC_2017-03.gz --cv 10000 --maxlines 100000
+
+
 .PHONY: smalltest
 smalltest:
 	time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03.gz --cv 10 --maxlines 100

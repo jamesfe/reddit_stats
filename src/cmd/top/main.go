@@ -53,7 +53,8 @@ func main() {
 	}
 
 	var targetReddits JSONList
-	utils.ReadJsonFile("./metadata/top_100_subreddits_jul2017.json", &targetReddits)
+	// TODO: Make this part of config
+	utils.ReadJsonFile("./meta/top_100_subreddits_jul2017.json", &targetReddits)
 	rmap := makeRedditMap(targetReddits.Items)
 
 	var delim byte = '\n'
