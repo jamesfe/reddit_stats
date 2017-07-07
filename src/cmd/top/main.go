@@ -88,11 +88,15 @@ func main() {
 		}
 	}
 
+	var allResults data_types.DeletedByDateAndReddit
+	allResults.Reddits = make(map[string]data_types.DeletedByDate)
 	// Now we can aggregate differently.
-	outputMap := AggregateByDeletedCommentCounts(far)
+	for key, value := range far { // key here is the reddit and the value is a map of dates
+		allResults.Reddits[key] = AggregateByDeletedCommentCounts(value)
+	}
 
 	// JSON Output
-	apd, marshallErr := json.Marshal(outputMap)
+	apd, marshallErr := json.Marshal(allResults)
 	if marshallErr == nil {
 		outputFilename := fmt.Sprintf("./output/output_%d.json", time.Now().Unix())
 		ioutil.WriteFile(outputFilename, apd, 0644)
@@ -103,7 +107,7 @@ func main() {
 	}
 }
 
-func AggregateByDeletedCommentCounts(analysisResults map[string]map[string]int) map[string]data_types.DeletedTuple {
+func AggregateByDeletedCommentCounts(analysisResults map[string]map[string]int) data_types.DeletedByDate {
 	/* Count up the number of deleted, total, and not-deleted comments per time period and return them in a map. */
 	var today_sum int
 	var deleted_sum int
@@ -125,5 +129,7 @@ func AggregateByDeletedCommentCounts(analysisResults map[string]map[string]int) 
 		// probably unnecessary but:
 		log.Infof("Total: %d Deleted %d", today_sum, deleted_sum)
 	}
-	return outputMap
+	var retVals data_types.DeletedByDate
+	retVals.Dates = outputMap
+	return retVals
 }
