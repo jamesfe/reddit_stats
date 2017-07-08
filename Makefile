@@ -32,7 +32,6 @@ bigtest:
 dirtest:
 	time ./reddit_stats --filename ~/PersCode/reddit_donald/dir_test/ -cv 100 --maxlines 1000
 
-
 .PHONY: smfilter
 smfilter:
 	time ./reddit_filter --filename ~/PersCode/reddit_donald/data/RC_2017-03.gz --cv 1000 --maxlines 10000 --output ./filters/
@@ -44,3 +43,7 @@ filterall:
 .PHONY: analyze
 analyze:
 	time ./reddit_stats --filename ~/PersCode/reddit_donald/data/ --cv 1000000 --maxlines 10000000000
+
+.PHONY: analyzemulti
+analyzemulti:
+	time ./full_analyze --filename ~/PersCode/reddit_donald/data/ --cv 1000000 --maxlines 10000000000
