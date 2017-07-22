@@ -4,33 +4,29 @@ build:
 	go build -o reddit_filter ./src/cmd/filter
 	go build -o full_analyze ./src/cmd/top
 
-.PHONY: smalltestmulti
-smalltestmulti:
-	time ./full_analyze --filename ~/PersCode/reddit_donald/data/RC_2017-03.gz --cv 10 --maxlines 100
+.PHONY: tinytestmulti
+tinytestmulti:
+	time ./full_analyze --config ./configs/tiny.json
 
-.PHONY: medtestmulti
-medtestmulti:
-	time ./full_analyze --filename ~/PersCode/reddit_donald/data/RC_2017-03.gz --cv 10000 --maxlines 100000
+.PHONY: tinytest
+tinytest:
+	time ./reddit_stats --config ./configs/tiny.json
 
+.PHONY: mediumtestmulti
+mediumtestmulti:
+	time ./full_analyze --config ./configs/medium.json
 
-.PHONY: smalltest
-smalltest:
-	time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03.gz --cv 10 --maxlines 100
+.PHONY: mediumtest
+mediumtest:
+	time ./reddit_stats --config ./configs/medium.json
 
-
-.PHONY: medtest
-medtest:
-	time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03.gz --cv 10000 --maxlines 100000
-
+.PHONY: bigtestmulti
+bigtestmulti:
+	time ./full_analyze --config ./configs/big.json
 
 .PHONY: bigtest
 bigtest:
-	time ./reddit_stats --filename ~/PersCode/reddit_donald/data/RC_2017-03.gz --cv 1000000 --maxlines 10000000
-
-
-.PHONY: dirtest
-dirtest:
-	time ./reddit_stats --filename ~/PersCode/reddit_donald/dir_test/ -cv 100 --maxlines 1000
+	time ./reddit_stats --config ./configs/big.json
 
 .PHONY: smfilter
 smfilter:
@@ -42,8 +38,8 @@ filterall:
 
 .PHONY: analyze
 analyze:
-	time ./reddit_stats --filename ~/PersCode/reddit_donald/data/ --cv 1000000 --maxlines 10000000000
+	time ./reddit_stats --config ./configs/complete.json
 
 .PHONY: analyzemulti
 analyzemulti:
-	time ./full_analyze --filename ~/PersCode/reddit_donald/data/ --cv 1000000 --maxlines 10000000000
+	time ./full_analyze --config ./configs/complete.json
