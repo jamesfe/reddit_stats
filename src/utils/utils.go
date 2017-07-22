@@ -199,6 +199,14 @@ func LoadConfigurationFromFile(inFile string) data_types.StatsConfiguration {
 		log.Fatalf("Could not open config file, error: %s", e)
 	}
 	json.Unmarshal(file, &returnValue)
+
+	if len(returnValue.AnalysisConfiguration.AnalysisTypes) > 0 {
+		returnValue.AnalysisConfiguration.AnalysisMap = make(map[string]bool)
+		for _, val := range returnValue.AnalysisConfiguration.AnalysisTypes {
+			returnValue.AnalysisConfiguration.AnalysisMap[val] = true
+		}
+	}
+
 	return returnValue
 }
 

@@ -44,3 +44,17 @@ func AggregateAuthorLine(res *data_types.AuthorDateTuple, resultMap *map[string]
 		(*resultMap)[res.AuthorDate][res.AuthorName] = 1
 	}
 }
+
+func AggregateLongevityLine(res *data_types.AuthorDateTuple, resultMap *map[string]data_types.UserLongevityResult) {
+	/* We see if the user is in our DB, if they are we check dates and update if not, we insert. */
+	if val, ok := (*resultMap)[res.AuthorName]; ok {
+		if res.Timestamp < val.FirstPost {
+			val.FirstPost = res.Timestamp
+		} else if res.Timestamp > val.LastPost {
+			val.LastPost = res.Timestamp
+		}
+		val.NumPosts += 1
+	} else {
+		(*resultMap)[res.AuthorName] = data_types.UserLongevityResult{FirstPost: res.Timestamp, LastPost: res.Timestamp, NumPosts: 1}
+	}
+}
