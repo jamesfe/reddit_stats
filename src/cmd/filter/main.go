@@ -28,10 +28,10 @@ func main() {
 	log.Infof("Entering read/write loop.")
 	for _, file := range filesToCheck {
 		log.Debugf("Reading %s", file)
-		inFileReader, f := utils.GetFileReader(file)
-		outFileWriter, g := utils.GetBufioFileWriter(file, config.InputFilterConfiguration.OutputDirectory, "")
-		defer g()
-		defer f()
+		inFileReader, closeInFileReader := utils.GetFileReader(file)
+		outFileWriter, closeOutFileWriter := utils.GetBufioFileWriter(file, config.InputFilterConfiguration.OutputDirectory, "")
+		defer closeOutFileWriter()
+		defer closeInFileReader()
 	lineloop:
 		for lines = lines; lines < config.MaxLines; lines++ {
 			if lines%config.CheckInterval == 0 {
