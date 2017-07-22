@@ -8,7 +8,6 @@ import (
 	"math/rand"
 	"os"
 	"runtime/pprof"
-	"strings"
 	"time"
 
 	"github.com/jamesfe/reddit_stats/src/analysis"
@@ -26,25 +25,15 @@ type JSONList struct {
 	Items []string `json:"items"`
 }
 
-func makeRedditMap(items []string) map[string]bool {
-	retVals := make(map[string]bool)
-	for _, val := range items {
-		retVals[strings.ToLower(val)] = true
-	}
-	return retVals
-}
-
 func main() {
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	filename := flag.String("filename", "", "input filename")
-	checkInterval := flag.Int("cv", 1000000, "check value")
-	maxLines := flag.Int("maxlines", 0, "max lines to read")
-	cpuprofile := flag.String("cpuprofile", "", "write cpu profile to file")
-
+	configFile := flag.String("config", "", "config file (see sample in repo)")
 	flag.Parse()
-	if *cpuprofile != "" {
-		f, err := os.Create(*cpuprofile)
+	config := utils.LoadConfigurationFromFile(*configFile)
+
+	if config.CpuProfile != "" {
+		f, err := os.Create(config.CpuProfile)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -53,12 +42,12 @@ func main() {
 	}
 
 	var targetReddits JSONList
-	// TODO: Make this part of config
-	utils.ReadJsonFile("./meta/political_subreddits_jul_2017.json", &targetReddits)
-	rmap := makeRedditMap(targetReddits.Items)
+	// Check the config to make sure this is set?
+	utils.ReadJsonFile(config.FilterConfiguration.SubredditListFile, &targetReddits)
+	rmap := utils.MakeRedditMap(targetReddits.Items)
 
 	var delim byte = '\n'
-	filesToCheck := utils.GetFilesToCheck(*filename)
+	filesToCheck := utils.GetFilesToCheck(config.DataSource)
 
 	var lines int = 0
 	var resultItem data_types.AuthorDateSubTuple // we reuse this address for results
@@ -72,8 +61,8 @@ func main() {
 		inFileReader, f := utils.GetFileReader(file)
 		defer f()
 	lineloop:
-		for lines = lines; lines < *maxLines; lines++ {
-			if lines%*checkInterval == 0 {
+		for lines = lines; lines < config.MaxLines; lines++ {
+			if lines%config.CheckInterval == 0 {
 				log.Debugf("Read %d lines", lines)
 			}
 			if inputBytes, err := inFileReader.ReadBytes(delim); err != nil {
@@ -83,7 +72,7 @@ func main() {
 				analysis.AggregateAuthorLineMulti(&resultItem, &far)
 			}
 		}
-		if lines == *maxLines {
+		if lines == config.MaxLines {
 			log.Infof("Max lines reached")
 			break
 		}

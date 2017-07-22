@@ -47,3 +47,15 @@ type DeletedByDate struct {
 type DeletedByDateAndReddit struct {
 	Reddits map[string]DeletedByDate `json:"reddits"`
 }
+
+type FilterSettings struct {
+	SubredditListFile string `json:"list_file"`
+}
+
+type StatsConfiguration struct {
+	DataSource          string         `json:"data_source"`
+	CheckInterval       int            `json:"check_interval"`
+	MaxLines            int            `json:"max_lines"`
+	CpuProfile          string         `json:"cpu_profile"`
+	FilterConfiguration FilterSettings `json:"filter_settings"`
+}

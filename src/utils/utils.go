@@ -191,3 +191,22 @@ func GetFilesToCheck(inFile string) []string {
 	}
 	return filesToCheck
 }
+
+func LoadConfigurationFromFile(inFile string) data_types.StatsConfiguration {
+	var returnValue data_types.StatsConfiguration
+	log.Debugf("Loading config from %s", inFile)
+	file, e := ioutil.ReadFile(inFile)
+	if e != nil {
+		log.Fatalf("Could not open config file, error: %s", e)
+	}
+	json.Unmarshal(file, &returnValue)
+	return returnValue
+}
+
+func MakeRedditMap(items []string) map[string]bool {
+	retVals := make(map[string]bool)
+	for _, val := range items {
+		retVals[strings.ToLower(val)] = true
+	}
+	return retVals
+}
