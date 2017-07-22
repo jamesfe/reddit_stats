@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math/rand"
-	"os"
-	"runtime/pprof"
 	"time"
 
 	"github.com/jamesfe/reddit_stats/src/analysis"
@@ -29,13 +27,10 @@ func main() {
 	config := utils.LoadConfigurationFromFile(*configFile)
 
 	flag.Parse()
+
 	if config.CpuProfile != "" {
-		f, err := os.Create(config.CpuProfile)
-		if err != nil {
-			log.Fatal(err)
-		}
-		pprof.StartCPUProfile(f)
-		defer pprof.StopCPUProfile()
+		stopIt := utils.StartCPUProfile(config.CpuProfile)
+		defer stopIt()
 	}
 
 	var delim byte = '\n'

@@ -16,15 +16,12 @@ var format = logging.MustStringFormatter(
 )
 
 func main() {
-	filename := flag.String("filename", "", "input filename")
-	checkInterval := flag.Int("cv", 1000000, "check value")
-	maxLines := flag.Int("maxlines", 0, "max lines to read")
-	outputDir := flag.String("output", "./outfilter/", "output directory")
-
+	configFile := flag.String("config", "", "config file (see sample in repo)")
 	flag.Parse()
+	config := utils.LoadConfigurationFromFile(*configFile)
 
 	var delim byte = '\n'
-	filesToCheck := utils.GetFilesToCheck(*filename)
+	filesToCheck := utils.GetFilesToCheck(config.DataSource)
 
 	var lines int = 0
 	log.Debug("%v", filesToCheck)
@@ -32,12 +29,12 @@ func main() {
 	for _, file := range filesToCheck {
 		log.Debugf("Reading %s", file)
 		inFileReader, f := utils.GetFileReader(file)
-		outFileWriter, g := utils.GetBufioFileWriter(file, *outputDir, "")
+		outFileWriter, g := utils.GetBufioFileWriter(file, config.InputFilterConfiguration.OutputDirectory, "")
 		defer g()
 		defer f()
 	lineloop:
-		for lines = lines; lines < *maxLines; lines++ {
-			if lines%*checkInterval == 0 {
+		for lines = lines; lines < config.MaxLines; lines++ {
+			if lines%config.CheckInterval == 0 {
 				log.Debugf("Read %d lines", lines)
 			}
 			if inputBytes, err := inFileReader.ReadBytes(delim); err != nil {
@@ -60,7 +57,7 @@ func main() {
 				}
 			}
 		}
-		if lines == *maxLines {
+		if lines == config.MaxLines {
 			log.Infof("Max lines reached")
 			break
 		}

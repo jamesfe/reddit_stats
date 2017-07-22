@@ -11,6 +11,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"runtime/pprof"
 	"strconv"
 	"strings"
 	"time"
@@ -207,4 +208,13 @@ func MakeRedditMap(items []string) map[string]bool {
 		retVals[strings.ToLower(val)] = true
 	}
 	return retVals
+}
+
+func StartCPUProfile(outFile string) func() {
+	f, err := os.Create(outFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	pprof.StartCPUProfile(f)
+	return pprof.StopCPUProfile
 }
