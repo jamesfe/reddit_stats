@@ -42,7 +42,6 @@ func main() {
 	}
 
 	var targetReddits JSONList
-	// Check the config to make sure this is set?
 	utils.ReadJsonFile(config.FilterConfiguration.SubredditListFile, &targetReddits)
 	rmap := utils.MakeRedditMap(targetReddits.Items)
 

@@ -24,14 +24,13 @@ var format = logging.MustStringFormatter(
 func main() {
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	filename := flag.String("filename", "", "input filename")
-	checkInterval := flag.Int("cv", 1000000, "check value")
-	maxLines := flag.Int("maxlines", 0, "max lines to read")
-	cpuprofile := flag.String("cpuprofile", "", "write cpu profile to file")
+	configFile := flag.String("config", "", "config file (see sample in repo)")
+	flag.Parse()
+	config := utils.LoadConfigurationFromFile(*configFile)
 
 	flag.Parse()
-	if *cpuprofile != "" {
-		f, err := os.Create(*cpuprofile)
+	if config.CpuProfile != "" {
+		f, err := os.Create(config.CpuProfile)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -40,7 +39,7 @@ func main() {
 	}
 
 	var delim byte = '\n'
-	filesToCheck := utils.GetFilesToCheck(*filename)
+	filesToCheck := utils.GetFilesToCheck(config.DataSource)
 
 	var lines int = 0
 	var resultItem data_types.AuthorDateTuple // we reuse this address for results
@@ -54,8 +53,8 @@ func main() {
 		inFileReader, f := utils.GetFileReader(file)
 		defer f()
 	lineloop:
-		for lines = lines; lines < *maxLines; lines++ {
-			if lines%*checkInterval == 0 {
+		for lines = lines; lines < config.MaxLines; lines++ {
+			if lines%config.CheckInterval == 0 {
 				log.Debugf("Read %d lines", lines)
 			}
 			if inputBytes, err := inFileReader.ReadBytes(delim); err != nil {
@@ -65,7 +64,7 @@ func main() {
 				analysis.AggregateAuthorLine(&resultItem, &far)
 			}
 		}
-		if lines == *maxLines {
+		if lines == config.MaxLines {
 			log.Infof("Max lines reached")
 			break
 		}
