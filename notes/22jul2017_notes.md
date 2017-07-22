@@ -14,3 +14,8 @@
 - I should learn more about these magical interfaces :-)
 
 - I did not end up working on longevity stuff so I will do a bit more of that but may not post till tomorrow.
+
+
+## Other Thoughts
+
+This other thought also occured to me - I should build a list of the subs I believe I'm going to be interested in and write those to an output file, then write all the things that are *not* in that list to another file.  I can split these into two directories and probably save a little time.  
