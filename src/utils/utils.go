@@ -42,10 +42,7 @@ func ReadJsonFile(inFile string, jsontype interface{}) {
 		log.Debugf("File error: %v\n", e)
 		os.Exit(1)
 	}
-	log.Debugf("%s\n", string(file))
-
 	json.Unmarshal(file, &jsontype)
-	log.Debugf("Results: %v\n", jsontype)
 }
 
 func GetIntTimestamp(v interface{}) int {
@@ -183,6 +180,7 @@ func GetFilesToCheck(inFile string) []string {
 				}
 			}
 		} else {
+			log.Errorf("Error dir: %s", inFile)
 			log.Fatalf("Appeared to be a directory but had trouble: %s", dirErr)
 		}
 		// we need to loop over the files
