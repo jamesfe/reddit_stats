@@ -8,12 +8,11 @@ import (
 	"github.com/jamesfe/reddit_stats/src/utils"
 )
 
-func AuthorSingleLine(line []byte, result *data_types.AuthorDateTuple, dateAgg data_types.DateToString) bool {
+func AuthorSingleLine(line []byte, result *data_types.AuthorDateTuple, dateAgg data_types.DateToString, sampling bool) bool {
 	/* Take some bytes, convert them from JSON and return the author and date as a string
 	if they are valid. */
 
-	if utils.IsDonaldLite(line) {
-		//	if utils.IsRandomSample(0.25) {
+	if (!sampling && utils.IsDonaldLite(line)) || utils.IsRandomSample(0.25) {
 		var rawJsonMap interface{}
 		jumerr := json.Unmarshal(line, &rawJsonMap)
 

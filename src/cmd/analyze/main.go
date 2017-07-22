@@ -55,7 +55,7 @@ func main() {
 			if inputBytes, err := inFileReader.ReadBytes(delim); err != nil {
 				log.Errorf("File Error: %s", err) // maybe we are in an IO error?
 				break lineloop
-			} else if analysis.AuthorSingleLine(inputBytes, &resultItem, utils.GetWeekString) {
+			} else if analysis.AuthorSingleLine(inputBytes, &resultItem, utils.GetWeekString, false) {
 				analysis.AggregateAuthorLine(&resultItem, &far)
 			}
 		}
