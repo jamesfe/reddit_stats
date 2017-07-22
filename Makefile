@@ -12,12 +12,12 @@ tinytestmulti:
 tinytest:
 	time ./reddit_stats --config ./configs/tiny.json
 
-.PHONY: mediumtestmulti
-mediumtestmulti:
+.PHONY: medtestmulti
+medtestmulti:
 	time ./full_analyze --config ./configs/medium.json
 
-.PHONY: mediumtest
-mediumtest:
+.PHONY: medtest
+medtest:
 	time ./reddit_stats --config ./configs/medium.json
 
 .PHONY: bigtestmulti
