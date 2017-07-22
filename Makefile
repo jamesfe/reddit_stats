@@ -4,6 +4,18 @@ build:
 	go build -o reddit_filter ./src/cmd/filter
 	go build -o full_analyze ./src/cmd/top
 
+.PHONY: buildt
+buildt:
+	make build
+	make test
+
+.PHONY: test
+test:
+	go test ./src/utils -cover
+	go test ./src/analysis -cover
+	go test ./src/data_types -cover
+	go test ./src/cmd/** -cover
+
 .PHONY: tinytestmulti
 tinytestmulti:
 	time ./full_analyze --config ./configs/tiny.json
