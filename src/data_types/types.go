@@ -6,6 +6,7 @@ type DateToString func(int) string
 type AuthorDateTuple struct {
 	AuthorDate string
 	AuthorName string
+	Timestamp  int
 }
 
 type AuthorDateSubTuple struct {

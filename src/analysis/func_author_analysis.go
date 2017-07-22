@@ -24,6 +24,7 @@ func AuthorSingleLine(line []byte, result *data_types.AuthorDateTuple, dateAgg d
 				realTime := utils.GetIntTimestamp(v["created_utc"])
 				if realTime != 0 { // if it is junk, don't record
 					result.AuthorDate = dateAgg(realTime)
+					result.Timestamp = realTime
 					return true
 				}
 			}
