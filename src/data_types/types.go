@@ -55,3 +55,8 @@ type UserLongevityResult struct {
 	LastPost  int `json:"last_post_timestamp"`
 	NumPosts  int `json:"num_posts"`
 }
+
+type TimePeriod struct {
+	StartDate string `json:"start_date"`
+	EndDate   string `json:"end_date"`
+}

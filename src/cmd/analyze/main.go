@@ -74,6 +74,20 @@ func main() {
 	// Now we can aggregate differently.
 	outputMap := AggregateByDeletedCommentCounts(far)
 
+	// We aggregate also by author longevity
+	longevityOutput := AggregateByAuthorLongevity(longevityMap)
+
+	// Second JSON Output
+	lvOutput, me := json.Marshal(longevityOutput)
+	if me == nil {
+		outputFilename := fmt.Sprintf("./output/output_%d.json", time.Now().Unix()-1)
+		ioutil.WriteFile(outputFilename, lvOutput, 0644)
+		// log.Infof("JSON Output: %s", apd)
+		log.Infof("Output written to %s", outputFilename)
+	} else {
+		log.Errorf("Error parsing output JSON: %s", me)
+	}
+
 	// JSON Output
 	apd, marshallErr := json.Marshal(outputMap)
 	if marshallErr == nil {
@@ -84,6 +98,17 @@ func main() {
 	} else {
 		log.Errorf("Error parsing output JSON: %s", marshallErr)
 	}
+}
+
+func AggregateByAuthorLongevity(input map[string]data_types.UserLongevityResult) []data_types.TimePeriod {
+	var rv []data_types.TimePeriod
+	for _, element := range input {
+		newObject := data_types.TimePeriod{
+			StartDate: utils.GetDayString(element.FirstPost),
+			EndDate:   utils.GetDayString(element.LastPost)}
+		rv = append(rv, newObject)
+	}
+	return rv
 }
 
 func AggregateByDeletedCommentCounts(analysisResults map[string]map[string]int) map[string]data_types.DeletedTuple {
