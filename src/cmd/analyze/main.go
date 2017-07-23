@@ -41,7 +41,7 @@ func main() {
 
 	// Represents day -> author -> posts
 	far := make(map[string]map[string]int)
-	// longevityMap := make(map[string]data_types.UserLongevityResult)
+	longevityMap := make(map[string]data_types.UserLongevityResult)
 
 	log.Infof("Entering analysis loop.")
 	for _, file := range filesToCheck {
@@ -59,6 +59,9 @@ func main() {
 			} else if analysis.AuthorSingleLine(inputBytes, &resultItem, utils.GetWeekString, false) {
 				if config.AnalysisConfiguration.AnalysisMap["unique_author_count"] == true {
 					analysis.AggregateAuthorLine(&resultItem, &far)
+				}
+				if config.AnalysisConfiguration.AnalysisMap["author_longevity"] == true {
+					analysis.AggregateLongevityLine(&resultItem, &longevityMap)
 				}
 			}
 		}
