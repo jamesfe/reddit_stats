@@ -1,10 +1,7 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
-	"fmt"
-	"io/ioutil"
 	"math/rand"
 	"time"
 
@@ -57,10 +54,10 @@ func main() {
 				log.Errorf("File Error: %s", err) // maybe we are in an IO error?
 				break lineloop
 			} else if analysis.AuthorSingleLine(inputBytes, &resultItem, utils.GetWeekString, false) {
-				if config.AnalysisConfiguration.AnalysisMap["unique_author_count"] == true {
+				if config.AnalysisConfiguration.AnalysisMap["unique_author_count"] {
 					analysis.AggregateAuthorLine(&resultItem, &far)
 				}
-				if config.AnalysisConfiguration.AnalysisMap["author_longevity"] == true {
+				if config.AnalysisConfiguration.AnalysisMap["author_longevity"] {
 					analysis.AggregateLongevityLine(&resultItem, &longevityMap)
 				}
 			}
@@ -71,32 +68,13 @@ func main() {
 		}
 	}
 
-	// Now we can aggregate differently.
-	outputMap := AggregateByDeletedCommentCounts(far)
-
-	// We aggregate also by author longevity
-	longevityOutput := AggregateByAuthorLongevity(longevityMap)
-
-	// Second JSON Output
-	lvOutput, me := json.Marshal(longevityOutput)
-	if me == nil {
-		outputFilename := fmt.Sprintf("./output/output_%d.json", time.Now().Unix()-1)
-		ioutil.WriteFile(outputFilename, lvOutput, 0644)
-		// log.Infof("JSON Output: %s", apd)
-		log.Infof("Output written to %s", outputFilename)
-	} else {
-		log.Errorf("Error parsing output JSON: %s", me)
+	if config.AnalysisConfiguration.AnalysisMap["author_longevity"] {
+		longevityOutput := AggregateByAuthorLongevity(longevityMap)
+		utils.DumpJSONToFile("longevity", longevityOutput)
 	}
-
-	// JSON Output
-	apd, marshallErr := json.Marshal(outputMap)
-	if marshallErr == nil {
-		outputFilename := fmt.Sprintf("./output/output_%d.json", time.Now().Unix())
-		ioutil.WriteFile(outputFilename, apd, 0644)
-		// log.Infof("JSON Output: %s", apd)
-		log.Infof("Output written to %s", outputFilename)
-	} else {
-		log.Errorf("Error parsing output JSON: %s", marshallErr)
+	if config.AnalysisConfiguration.AnalysisMap["unique_author_count"] {
+		outputMap := AggregateByDeletedCommentCounts(far)
+		utils.DumpJSONToFile("deleted", outputMap)
 	}
 }
 

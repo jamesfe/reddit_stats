@@ -226,3 +226,14 @@ func StartCPUProfile(outFile string) func() {
 	pprof.StartCPUProfile(f)
 	return pprof.StopCPUProfile
 }
+
+func DumpJSONToFile(name string, dt interface{}) {
+	outData, me := json.Marshal(dt)
+	if me == nil {
+		outputFilename := fmt.Sprintf("./output/%s_%d.json", name, time.Now().Unix())
+		ioutil.WriteFile(outputFilename, outData, 0644)
+		log.Infof("%s Output written to %s", name, outputFilename)
+	} else {
+		log.Errorf("Error parsing output JSON: %s", me)
+	}
+}
