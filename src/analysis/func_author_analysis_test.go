@@ -30,3 +30,11 @@ func TestAuthorSingleLine(t *testing.T) {
 		t.Errorf("Found these authors %s but only expected %d.", authorList, uniqueAuthors)
 	}
 }
+
+func TestAggregateAuthorLine(t *testing.T) {
+	var tmap *map[string]map[string]int = make(map[string]map[string]int)
+	var res data_types.AuthorDateTuple = data_types.AuthorDateTuple{AuthorName: "blah", AuthorDate: "02-2017", Timestamp: 1000}
+
+}
+
+//	res *data_types.AuthorDateTuple, resultMap *map[string]map[string]int) {

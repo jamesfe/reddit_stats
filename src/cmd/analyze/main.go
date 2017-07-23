@@ -69,7 +69,7 @@ func main() {
 	}
 
 	if config.AnalysisConfiguration.AnalysisMap["author_longevity"] {
-		longevityOutput := AggregateByAuthorLongevity(longevityMap)
+		longevityOutput := AggregateByAuthorLongevity(longevityMap, 2*24*3600)
 		utils.DumpJSONToFile("longevity", longevityOutput)
 	}
 	if config.AnalysisConfiguration.AnalysisMap["unique_author_count"] {
@@ -78,13 +78,15 @@ func main() {
 	}
 }
 
-func AggregateByAuthorLongevity(input map[string]data_types.UserLongevityResult) []data_types.TimePeriod {
+func AggregateByAuthorLongevity(input map[string]data_types.UserLongevityResult, minSecondsDiff int) []data_types.TimePeriod {
 	var rv []data_types.TimePeriod
 	for _, element := range input {
-		newObject := data_types.TimePeriod{
-			StartDate: utils.GetDayString(element.FirstPost),
-			EndDate:   utils.GetDayString(element.LastPost)}
-		rv = append(rv, newObject)
+		if (element.LastPost - element.FirstPost) >= minSecondsDiff {
+			newObject := data_types.TimePeriod{
+				StartDate: utils.GetDayString(element.FirstPost),
+				EndDate:   utils.GetDayString(element.LastPost)}
+			rv = append(rv, newObject)
+		}
 	}
 	return rv
 }
