@@ -1,0 +1,18 @@
+{
+    "data_source": "path/to/files/or/just/pathname",
+    "check_interval": 1234,
+    "max_lines": 12345,
+    "cpu_profile": "",
+    "filter_settings": {
+        "list_file": "./meta/political_subreddits_jul_2017.json"
+    },
+    "input_filter_settings": {
+        "output_dir": "./filters"
+    },
+    "analysis_settings": {
+        "analysis_types": [
+            "unique_author_count",
+            "author_longevity"
+        ]
+    }
+}
