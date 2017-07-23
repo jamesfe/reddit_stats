@@ -30,3 +30,24 @@ func TestAuthorSingleLine(t *testing.T) {
 		t.Errorf("Found these authors %s but only expected %d.", authorList, uniqueAuthors)
 	}
 }
+
+func TestBadAuthorSingleLine(t *testing.T) {
+	var res data_types.AuthorDateTuple // we reuse this address for results
+	val := AuthorSingleLine([]byte("blah t5_38unr blah"), &res, utils.GetWeekString, false)
+	if val != false {
+		t.Error("Bad JSON resulted in a true.")
+	}
+}
+
+func TestAggregateAuthorLine(t *testing.T) {
+	tmap := make(map[string]map[string]int)
+	var res data_types.AuthorDateTuple = data_types.AuthorDateTuple{AuthorName: "blah", AuthorDate: "02-2017", Timestamp: 1000}
+	AggregateAuthorLine(&res, &tmap)
+	if tmap["02-2017"][res.AuthorName] != 1 {
+		t.Errorf("Did not register first author.")
+	}
+	AggregateAuthorLine(&res, &tmap)
+	if tmap["02-2017"][res.AuthorName] != 2 {
+		t.Errorf("Did not register second author.")
+	}
+}
