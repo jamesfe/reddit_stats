@@ -36,5 +36,3 @@ func TestAggregateAuthorLine(t *testing.T) {
 	var res data_types.AuthorDateTuple = data_types.AuthorDateTuple{AuthorName: "blah", AuthorDate: "02-2017", Timestamp: 1000}
 
 }
-
-//	res *data_types.AuthorDateTuple, resultMap *map[string]map[string]int) {
