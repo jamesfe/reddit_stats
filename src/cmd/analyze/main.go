@@ -58,6 +58,11 @@ func main() {
 					analysis.AggregateAuthorLine(&resultItem, &far)
 				}
 				if config.AnalysisConfiguration.AnalysisMap["author_longevity"] {
+					if resultItem.Timestamp < minDate {
+						minDate = resultItem.minDate
+					} else if resultItem.Timestamp > maxDate {
+						maxDate = resultItem.maxDate
+					}
 					analysis.AggregateLongevityLine(&resultItem, &longevityMap)
 				}
 			}
