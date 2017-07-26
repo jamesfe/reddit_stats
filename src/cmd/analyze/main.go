@@ -32,14 +32,14 @@ func main() {
 
 	var delim byte = '\n'
 	filesToCheck := utils.GetFilesToCheck(config.DataSource)
-
+	log.Debugf("%$v", config)
 	var lines int = 0
 	var resultItem data_types.AuthorDateTuple // we reuse this address for results
 
 	// Represents day -> author -> posts
 	far := make(map[string]map[string]int)
-	longevityMap := make(map[string]data_types.UserLongevityResult)
-
+	longevityMap := make(map[string]*data_types.UserLongevityResult)
+	var minDate, maxDate int
 	log.Infof("Entering analysis loop.")
 	for _, file := range filesToCheck {
 		log.Debugf("Reading %s", file)
@@ -87,7 +87,7 @@ func AggregateByAuthorLongevity(input map[string]data_types.UserLongevityResult,
 	var rv []data_types.TimePeriod
 	for _, element := range input {
 		if (element.LastPost - element.FirstPost) >= minSecondsDiff {
-			newObject := data_types.TimePeriod{
+			newObject := &data_types.TimePeriod{
 				StartDate: utils.GetDayString(element.FirstPost),
 				EndDate:   utils.GetDayString(element.LastPost)}
 			rv = append(rv, newObject)
