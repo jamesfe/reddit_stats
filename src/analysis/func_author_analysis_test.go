@@ -32,7 +32,16 @@ func TestAuthorSingleLine(t *testing.T) {
 }
 
 func TestAggregateAuthorLine(t *testing.T) {
-	var tmap *map[string]map[string]int = make(map[string]map[string]int)
+	tmap := make(map[string]map[string]int)
 	var res data_types.AuthorDateTuple = data_types.AuthorDateTuple{AuthorName: "blah", AuthorDate: "02-2017", Timestamp: 1000}
+	AggregateAuthorLine(&res, &tmap)
+	if tmap["02-2017"]["blah"] != 1 {
+		t.Errorf("AggregateAuthorLine cannot count the first instance.")
+	}
+
+	AggregateAuthorLine(&res, &tmap)
+	if tmap["02-2017"]["blah"] != 2 {
+		t.Errorf("AggregateAuthorLine cannot count the second instance.")
+	}
 
 }
