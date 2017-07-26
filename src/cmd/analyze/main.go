@@ -39,7 +39,8 @@ func main() {
 	// Represents day -> author -> posts
 	far := make(map[string]map[string]int)
 	longevityMap := make(map[string]*data_types.UserLongevityResult)
-	var minDate, maxDate int
+	var minDate int = 1501100780
+	var maxDate int = 0
 	log.Infof("Entering analysis loop.")
 	for _, file := range filesToCheck {
 		log.Debugf("Reading %s", file)
