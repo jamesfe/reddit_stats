@@ -13,6 +13,9 @@
         "analysis_types": [
             "unique_author_count",
             "author_longevity"
-        ]
+        ],
+        "longevity": {
+            "min_days": 3
+        }
     }
 }

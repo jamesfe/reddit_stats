@@ -8,9 +8,14 @@ type InputFilterSettings struct {
 	OutputDirectory string `json:"output_dir"`
 }
 
+type LongevitySettings struct {
+	MinDays int `json:"min_days"`
+}
+
 type AnalysisSettings struct {
-	AnalysisTypes []string `json:"analysis_types"`
-	AnalysisMap   map[string]bool
+	AnalysisTypes          []string `json:"analysis_types"`
+	AnalysisMap            map[string]bool
+	LongevityConfiguration LongevitySettings `json:"longevity"`
 }
 
 type StatsConfiguration struct {

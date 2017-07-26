@@ -32,14 +32,15 @@ func main() {
 
 	var delim byte = '\n'
 	filesToCheck := utils.GetFilesToCheck(config.DataSource)
-
+	log.Debugf("Config: %$v", config)
 	var lines int = 0
 	var resultItem data_types.AuthorDateTuple // we reuse this address for results
 
 	// Represents day -> author -> posts
 	far := make(map[string]map[string]int)
-	longevityMap := make(map[string]data_types.UserLongevityResult)
-
+	longevityMap := make(map[string]*data_types.UserLongevityResult)
+	var minDate int = 1501100780
+	var maxDate int = 0
 	log.Infof("Entering analysis loop.")
 	for _, file := range filesToCheck {
 		log.Debugf("Reading %s", file)
@@ -58,6 +59,11 @@ func main() {
 					analysis.AggregateAuthorLine(&resultItem, &far)
 				}
 				if config.AnalysisConfiguration.AnalysisMap["author_longevity"] {
+					if resultItem.Timestamp < minDate {
+						minDate = resultItem.Timestamp
+					} else if resultItem.Timestamp > maxDate {
+						maxDate = resultItem.Timestamp
+					}
 					analysis.AggregateLongevityLine(&resultItem, &longevityMap)
 				}
 			}
@@ -69,8 +75,12 @@ func main() {
 	}
 
 	if config.AnalysisConfiguration.AnalysisMap["author_longevity"] {
-		longevityOutput := AggregateByAuthorLongevity(longevityMap)
+		weekLength := 604800
+		minSeconds := config.AnalysisConfiguration.LongevityConfiguration.MinDays * 24 * 3600
+		outPerDay := CreateActiveUserMap(longevityMap, minDate, maxDate, weekLength, minSeconds, utils.GetWeekString)
+		longevityOutput := AggregateByAuthorLongevity(longevityMap, minSeconds)
 		utils.DumpJSONToFile("longevity", longevityOutput)
+		utils.DumpJSONToFile("outPerDay", outPerDay)
 	}
 	if config.AnalysisConfiguration.AnalysisMap["unique_author_count"] {
 		outputMap := AggregateByDeletedCommentCounts(far)
@@ -78,13 +88,37 @@ func main() {
 	}
 }
 
-func AggregateByAuthorLongevity(input map[string]data_types.UserLongevityResult) []data_types.TimePeriod {
-	var rv []data_types.TimePeriod
+func CreateActiveUserMap(input map[string]*data_types.UserLongevityResult, start int, end int, delta int, minSecondsDiff int, dateFunc data_types.DateToString) map[string]int {
+	/*
+	   First we create a map with all the dates we want.  We need start, end, and delta and aggregate function.
+	   Second we iterate over the list of items.  We generate a date, round it to delta and then add delta until it's larger than end.
+	*/
+	rv := make(map[string]int)
+	// Make the original map
+	for a := start; a < end; a += delta {
+		rv[dateFunc(a)] = 0
+	}
+
+	// For each item, add a bunch of things.
 	for _, element := range input {
-		newObject := data_types.TimePeriod{
-			StartDate: utils.GetDayString(element.FirstPost),
-			EndDate:   utils.GetDayString(element.LastPost)}
-		rv = append(rv, newObject)
+		if (element.LastPost - element.FirstPost) >= minSecondsDiff {
+			for b := element.FirstPost - (element.FirstPost % delta); b < element.LastPost; b += delta {
+				rv[dateFunc(b)] += 1
+			}
+		}
+	}
+	return rv
+}
+
+func AggregateByAuthorLongevity(input map[string]*data_types.UserLongevityResult, minSecondsDiff int) []*data_types.TimePeriod {
+	var rv []*data_types.TimePeriod
+	for _, element := range input {
+		if (element.LastPost - element.FirstPost) >= minSecondsDiff {
+			newObject := &data_types.TimePeriod{
+				StartDate: utils.GetDayString(element.FirstPost),
+				EndDate:   utils.GetDayString(element.LastPost)}
+			rv = append(rv, newObject)
+		}
 	}
 	return rv
 }
