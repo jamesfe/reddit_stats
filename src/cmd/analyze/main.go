@@ -76,9 +76,10 @@ func main() {
 	if config.AnalysisConfiguration.AnalysisMap["author_longevity"] {
 		weekLength := 604800
 		minSeconds := config.AnalysisConfiguration.LongevityConfiguration.MinDays * 24 * 3600
-		CreateActiveUserMap(longevityMap, minDate, maxDate, weekLength, minSeconds, utils.GetWeekString)
+		outPerDay := CreateActiveUserMap(longevityMap, minDate, maxDate, weekLength, minSeconds, utils.GetWeekString)
 		longevityOutput := AggregateByAuthorLongevity(longevityMap, minSeconds)
 		utils.DumpJSONToFile("longevity", longevityOutput)
+		utils.DumpJSONToFile("outPerDay", outPerDay)
 	}
 	if config.AnalysisConfiguration.AnalysisMap["unique_author_count"] {
 		outputMap := AggregateByDeletedCommentCounts(far)
