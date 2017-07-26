@@ -32,7 +32,7 @@ func main() {
 
 	var delim byte = '\n'
 	filesToCheck := utils.GetFilesToCheck(config.DataSource)
-	log.Debugf("%$v", config)
+	log.Debugf("Config: %$v", config)
 	var lines int = 0
 	var resultItem data_types.AuthorDateTuple // we reuse this address for results
 

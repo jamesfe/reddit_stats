@@ -15,10 +15,7 @@
             "author_longevity"
         ],
         "longevity": {
-            "min_days": {
-                3
-            }
+            "min_days": 3
         }
-
     }
 }
