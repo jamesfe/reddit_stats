@@ -39,7 +39,7 @@ func main() {
 	// Represents day -> author -> posts
 	far := make(map[string]map[string]int)
 	longevityMap := make(map[string]*data_types.UserLongevityResult)
-	var minDate int = 1501100780
+	var minDate int = 1501100780 // a long time from now
 	var maxDate int = 0
 	log.Infof("Entering analysis loop.")
 	for _, file := range filesToCheck {
@@ -142,8 +142,6 @@ func AggregateByDeletedCommentCounts(analysisResults map[string]map[string]int) 
 		total_sum = today_sum + deleted_sum
 		d := &data_types.DeletedTuple{TodayTotal: today_sum, Deleted: deleted_sum, Total: total_sum}
 		outputMap[key] = *d
-		// probably unnecessary but:
-		log.Infof("Total: %d Deleted %d", today_sum, deleted_sum)
 	}
 	return outputMap
 }
