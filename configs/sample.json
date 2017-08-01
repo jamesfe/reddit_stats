@@ -12,7 +12,8 @@
     "analysis_settings": {
         "analysis_types": [
             "unique_author_count",
-            "author_longevity"
+            "author_longevity",
+            "deleted"
         ],
         "longevity": {
             "min_days": 3

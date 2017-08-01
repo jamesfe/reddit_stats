@@ -55,7 +55,7 @@ func main() {
 				log.Errorf("File Error: %s", err) // maybe we are in an IO error?
 				break lineloop
 			} else if analysis.AuthorSingleLine(inputBytes, &resultItem, utils.GetWeekString, false) {
-				if config.AnalysisConfiguration.AnalysisMap["unique_author_count"] {
+				if config.AnalysisConfiguration.AnalysisMap["unique_author_count"] || config.AnalysisConfiguration.AnalysisMap["deleted"] {
 					analysis.AggregateAuthorLine(&resultItem, &far)
 				}
 				if config.AnalysisConfiguration.AnalysisMap["author_longevity"] {
@@ -83,9 +83,21 @@ func main() {
 		utils.DumpJSONToFile("outPerDay", outPerDay)
 	}
 	if config.AnalysisConfiguration.AnalysisMap["unique_author_count"] {
+		uniqueAuthorMap := AggregateUniqueAuthors(far)
+		utils.DumpJSONToFile("uniqueauthors", uniqueAuthorMap)
+	}
+	if config.AnalysisConfiguration.AnalysisMap["deleted"] {
 		outputMap := AggregateByDeletedCommentCounts(far)
 		utils.DumpJSONToFile("deleted", outputMap)
 	}
+}
+
+func AggregateUniqueAuthors(analysisResults map[string]map[string]int) analysis.UniqueAuthorsPerDayResult {
+	resultMap := analysis.NewUniqueAuthorsPerDayResult()
+	for k, v := range analysisResults {
+		(*resultMap).AuthorsPerDay[k] = len(v)
+	}
+	return *resultMap
 }
 
 func CreateActiveUserMap(input map[string]*data_types.UserLongevityResult, start int, end int, delta int, minSecondsDiff int, dateFunc data_types.DateToString) map[string]int {
