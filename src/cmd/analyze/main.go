@@ -54,7 +54,7 @@ func main() {
 			if inputBytes, err := inFileReader.ReadBytes(delim); err != nil {
 				log.Errorf("File Error: %s", err) // maybe we are in an IO error?
 				break lineloop
-			} else if analysis.AuthorSingleLine(inputBytes, &resultItem, utils.GetWeekString, false) {
+			} else if analysis.AuthorSingleLine(inputBytes, &resultItem, utils.GetDayString, config.AnalysisConfiguration.TargetConfig.RandomSample) {
 				if config.AnalysisConfiguration.AnalysisMap["unique_author_count"] || config.AnalysisConfiguration.AnalysisMap["deleted"] {
 					analysis.AggregateAuthorLine(&resultItem, &far)
 				}

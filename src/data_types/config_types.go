@@ -12,10 +12,15 @@ type LongevitySettings struct {
 	MinDays int `json:"min_days"`
 }
 
+type TargetSettings struct {
+	RandomSample bool `json:"random_sample"`
+}
+
 type AnalysisSettings struct {
 	AnalysisTypes          []string `json:"analysis_types"`
 	AnalysisMap            map[string]bool
 	LongevityConfiguration LongevitySettings `json:"longevity"`
+	TargetConfig           TargetSettings    `json:"target"`
 }
 
 type StatsConfiguration struct {

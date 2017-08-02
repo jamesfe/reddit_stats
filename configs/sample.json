@@ -17,6 +17,9 @@
         ],
         "longevity": {
             "min_days": 3
+        },
+        "target": {
+            "random_sample": false
         }
     }
 }
