@@ -15,3 +15,4 @@ filters/
 *.json
 !meta/*
 !configs/sample.json
+coverage/

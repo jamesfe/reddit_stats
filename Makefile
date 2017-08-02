@@ -11,10 +11,20 @@ buildt:
 
 .PHONY: test
 test:
-	go test ./src/utils -cover
-	go test ./src/analysis -cover
-	go test ./src/data_types -cover
-	go test ./src/cmd/** -cover
+	go test ./src/cmd/analyze -coverprofile=./coverage/cmd_analyze.out
+	go test ./src/cmd/top -coverprofile=./coverage/cmd_top.out
+	go test ./src/cmd/filter -coverprofile=./coverage/cmd_filter.out
+	go test ./src/analysis/ -coverprofile=./coverage/analysis.out
+	go test ./src/utils/ -coverprofile=./coverage/utils.out
+
+ifeq (showcoverage,$(firstword $(MAKECMDGOALS)))
+  RUN_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+  $(eval $(RUN_ARGS):;@:)
+endif
+
+.PHONY: showcoverage
+showcoverage:
+	go tool cover -html=./coverage/$(RUN_ARGS).out
 
 .PHONY: tinytestmulti
 tinytestmulti:
