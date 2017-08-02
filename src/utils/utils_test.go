@@ -113,3 +113,37 @@ func TestLoadConfigurationFromFile(t *testing.T) {
 		t.Errorf("Input Filter Config, bad output dir")
 	}
 }
+
+func failIfNotZero(t *testing.T, check int, message string) {
+	if check != 0 {
+		t.Errorf(message)
+	}
+}
+
+func failIfZero(t *testing.T, check int, message string) {
+	if check == 0 {
+		t.Errorf(message)
+	}
+}
+
+func TestGetIntTimestamp(t *testing.T) {
+	failIfNotZero(t, 0, "zero should equal zero")
+	failIfNotZero(t, GetIntTimestamp(0), "zero should equal zero")
+	failIfNotZero(t, GetIntTimestamp("blah"), "blah should equal zero")
+	failIfZero(t, GetIntTimestamp("12345"), "blah should equal zero")
+	failIfZero(t, GetIntTimestamp(12345.1), "blah should equal zero")
+	var b uint = 20
+	failIfNotZero(t, GetIntTimestamp(b), "blah should equal zero")
+}
+
+func TestRandomSample(t *testing.T) {
+	b := IsRandomSample(100)
+	if !b {
+		t.Error("Random sample with 100% should be true.")
+	}
+	b = IsRandomSample(0)
+	if b {
+		t.Error("Random sample with 0% should be false.")
+	}
+
+}

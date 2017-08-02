@@ -59,6 +59,8 @@ func GetIntTimestamp(v interface{}) int {
 		} else {
 			retVal = int(parsed)
 		}
+	case int:
+		retVal = v.(int)
 	default:
 		retVal = 0
 	}
