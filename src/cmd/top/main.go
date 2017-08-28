@@ -1,5 +1,12 @@
 package main
 
+/*
+This command exists so that we can provide a list of some "top" reddits that we are interested in.
+
+We use the `AuthorSingleLineMulti` function to return both the author and the sub which means we can then
+filter things by sub.
+*/
+
 import (
 	"encoding/json"
 	"flag"

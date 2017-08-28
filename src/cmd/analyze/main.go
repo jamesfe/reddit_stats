@@ -39,7 +39,7 @@ func main() {
 	// Represents day -> author -> posts
 	far := make(map[string]map[string]int)
 	longevityMap := make(map[string]*data_types.UserLongevityResult)
-	var minDate int = 1501100780 // a long time from now
+	var minDate int = 1501100780 // a long time from now, used for author longevity
 	var maxDate int = 0
 	log.Infof("Entering analysis loop.")
 	for _, file := range filesToCheck {
@@ -56,9 +56,11 @@ func main() {
 				break lineloop
 			} else if analysis.AuthorSingleLine(inputBytes, &resultItem, utils.GetDayString, config.AnalysisConfiguration.TargetConfig.RandomSample) {
 				if config.AnalysisConfiguration.AnalysisMap["unique_author_count"] || config.AnalysisConfiguration.AnalysisMap["deleted"] {
+					/* Calculate the number of authors or whether or not this comment was deleted. */
 					analysis.AggregateAuthorLine(&resultItem, &far)
 				}
 				if config.AnalysisConfiguration.AnalysisMap["author_longevity"] {
+					/* Calculate the range in which an author has been posting. */
 					if resultItem.Timestamp < minDate {
 						minDate = resultItem.Timestamp
 					} else if resultItem.Timestamp > maxDate {
