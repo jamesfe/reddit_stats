@@ -9,6 +9,10 @@ type AuthorDateTuple struct {
 	Timestamp  int
 }
 
+type AuthorSubTuple struct {
+	SubReddit  string
+	AuthorName string
+}
 type AuthorDateSubTuple struct {
 	AuthorDate string
 	SubReddit  string
@@ -59,4 +63,10 @@ type UserLongevityResult struct {
 type TimePeriod struct {
 	StartDate string `json:"start_date"`
 	EndDate   string `json:"end_date"`
+}
+
+type AuthorProfile struct {
+	// MinDate            int            `json:"first_post_timestamp"`
+	// MaxDate            int            `json:"last_post_timestamp"`
+	CommentCountsBySub map[string]int `json:"comments_per_sub"`
 }
