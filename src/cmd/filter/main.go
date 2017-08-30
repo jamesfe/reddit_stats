@@ -1,5 +1,10 @@
 package main
 
+/*
+	Read a set of files and if the criteria match, output the line to an output directory.
+	Output folder is 'input_filter_settings.output_dir' in config.json
+*/
+
 import (
 	"encoding/json"
 	"flag"
@@ -41,7 +46,7 @@ func main() {
 				log.Errorf("File Error: %s", err) // maybe we are in an IO error?
 				break lineloop
 			} else {
-				if utils.IsDonaldLite(inputBytes) {
+				if utils.IsDonaldLite(inputBytes) { // the meat & potatoes: if it is Donald, check it and write it.
 					var rawJsonMap interface{}
 					jumerr := json.Unmarshal(inputBytes, &rawJsonMap)
 
