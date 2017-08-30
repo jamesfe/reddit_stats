@@ -30,6 +30,10 @@ endif
 showcoverage:
 	go tool cover -html=./coverage/$(RUN_ARGS).out
 
+.PHONY: tinytestprofiler
+tinytestprofiler:
+	time ./profile_users --config ./configs/tiny.json
+
 .PHONY: tinytestmulti
 tinytestmulti:
 	time ./full_analyze --config ./configs/tiny.json
@@ -38,6 +42,10 @@ tinytestmulti:
 tinytest:
 	time ./reddit_stats --config ./configs/tiny.json
 
+.PHONY: mediumtestprofiler
+mediumtestprofiler:
+	time ./profile_users --config ./configs/medium.json
+
 .PHONY: medtestmulti
 medtestmulti:
 	time ./full_analyze --config ./configs/medium.json
@@ -45,6 +53,10 @@ medtestmulti:
 .PHONY: medtest
 medtest:
 	time ./reddit_stats --config ./configs/medium.json
+
+.PHONY: bigtestprofiler
+bigtestprofiler:
+	time ./profile_users --config ./configs/big.json
 
 .PHONY: bigtestmulti
 bigtestmulti:
@@ -61,6 +73,10 @@ smfilter:
 .PHONY: filterall
 filterall:
 	time ./reddit_filter --filename ~/PersCode/reddit_donald/data/ --cv 1000000 --maxlines 10000000000 --output ./filters/
+
+.PHONY: profile
+profile:
+	time ./profile_users --config ./configs/complete.json
 
 .PHONY: analyze
 analyze:
