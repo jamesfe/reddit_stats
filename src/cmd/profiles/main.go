@@ -21,33 +21,21 @@ var format = logging.MustStringFormatter(
 	`%{color}%{time:15:04:05.000} %{shortfunc} ▶ %{level:.8s} %{id:03x}%{color:reset} %{message}`,
 )
 
-type thing struct {
-}
+type SubredditIntMap map[string]int
 
-func analysisFunction(config data_types.StatsConfiguration, line []byte) thing {
-	var resultItem data_types.AuthorDateSubTuple // we reuse this address for results
+func analysisFunction(line []byte) {
+	var resultItem data_types.AuthorDateSubTuple
 	if analysis.AuthorSingleLineMultiNoFilter(line, &resultItem) {
-		if val, ok := authorProfileMap[resultItem.AuthorName]; ok {
-			// Aggregate here
-			if individualProfile, ok2 := val.CommentCountsBySub[resultItem.SubReddit]; ok2 {
-				val.CommentCountsBySub[resultItem.SubReddit] += 1
-			} else {
-				val.CommentCountsBySub[resultItem.SubReddit] = 0
-			}
-		} else {
-			authorPofileMap[resultItem.AuthorName] = data_types.AuthorProfile{CommentCountsBySub: make(map[string]int)}
-			authorProfileMap[resultItem.AuthorName].CommentCountsBySub[resultItem.SubReddit] = 1
-		}
+		// We depend on golang initializing the int to it's "zero" value.
+		aggregateCounts[resultItem.AuthorName][resultItem.SubReddit] += 1
 	}
-	return nil
 }
 
-func readFilesAndReturnAnalysis(config data_types.StatsConfiguration, analysisFunc func(config data_types.StatsConfiguration, line []byte) thing) {
+func readFilesAndReturnAnalysis(analysisFunc func(line []byte)) {
 	var delim byte = '\n'
 	filesToCheck := utils.GetFilesToCheck(config.DataSource)
 	var lines int = 0
 
-	authorProfileMap := make(map[string]*data_types.AuthorProfile) // a map of usernames to profiles
 	log.Infof("Entering analysis loop.")
 	for _, file := range filesToCheck {
 		log.Debugf("Reading %s", file)
@@ -62,7 +50,7 @@ func readFilesAndReturnAnalysis(config data_types.StatsConfiguration, analysisFu
 				log.Errorf("File Error: %s", err) // maybe we are in an IO error?
 				break lineloop
 			} else {
-				analysisFunction(config, inputBytes)
+				analysisFunction(inputBytes)
 			}
 
 			if lines == config.MaxLines {
@@ -73,24 +61,39 @@ func readFilesAndReturnAnalysis(config data_types.StatsConfiguration, analysisFu
 	}
 }
 
-func main() {
-	rand.Seed(time.Now().UTC().UnixNano())
+var config data_types.StatsConfiguration
+var targetUsers map[string]bool
+var aggregateCounts map[string]map[string]int // map of username -> list of subs -> count of comments
 
+func init() {
+	rand.Seed(time.Now().UTC().UnixNano())
 	configFile := flag.String("config", "", "config file (see sample in repo)")
 	flag.Parse()
-	config := utils.LoadConfigurationFromFile(*configFile)
+	config = utils.LoadConfigurationFromFile(*configFile)
+	targetUsers = make(map[string]bool)
 
-	flag.Parse()
+	var userList data_types.JSONList
+	utils.ReadJsonFile(config.ProfileConfiguration.UserListFile, &userList)
+	/* This should never change after this. */
+	targetUsers = utils.MakeRedditMap(userList.Items)
 
+	/* We initialize our aggregation variable to be a map of all the known users with an empty
+	   subreddit->count map inside */
+	aggregateCounts = make(map[string]map[string]int)
+	for _, element := range userList.Items {
+		aggregateCounts[element] = make(map[string]int)
+	}
+}
+
+func main() {
 	if config.CpuProfile != "" {
 		stopIt := utils.StartCPUProfile(config.CpuProfile)
 		defer stopIt()
 	}
 
-	readFilesAndReturnAnalysis(config, analysisFunction)
+	readFilesAndReturnAnalysis(analysisFunction)
 
 	if config.AnalysisConfiguration.AnalysisMap["deleted"] {
-		outputMap := analysis.AggregateByDeletedCommentCounts(far)
-		utils.DumpJSONToFile("deleted", outputMap)
+		utils.DumpJSONToFile("user_comments_by_subreddit", aggregateCounts)
 	}
 }
