@@ -7,13 +7,12 @@ package main
 
 import (
 	"flag"
-	"math/rand"
-	"time"
-
 	"github.com/jamesfe/reddit_stats/src/analysis"
 	"github.com/jamesfe/reddit_stats/src/data_types"
 	"github.com/jamesfe/reddit_stats/src/utils"
 	"github.com/op/go-logging"
+	"math/rand"
+	"time"
 )
 
 var log = logging.MustGetLogger("profiles")
@@ -27,7 +26,9 @@ func analysisFunction(line []byte) {
 	var resultItem data_types.AuthorDateSubTuple
 	if analysis.AuthorSingleLineMultiNoFilter(line, &resultItem) {
 		// We depend on golang initializing the int to it's "zero" value.
-		aggregateCounts[resultItem.AuthorName][resultItem.SubReddit] += 1
+		if targetUsers[resultItem.AuthorName] {
+			aggregateCounts[resultItem.AuthorName][resultItem.SubReddit] += 1
+		}
 	}
 }
 
@@ -66,6 +67,7 @@ var targetUsers map[string]bool
 var aggregateCounts map[string]map[string]int // map of username -> list of subs -> count of comments
 
 func init() {
+	log.Info("Initializing")
 	rand.Seed(time.Now().UTC().UnixNano())
 	configFile := flag.String("config", "", "config file (see sample in repo)")
 	flag.Parse()
@@ -83,9 +85,11 @@ func init() {
 	for _, element := range userList.Items {
 		aggregateCounts[element] = make(map[string]int)
 	}
+	log.Info("Done Initializing")
 }
 
 func main() {
+	log.Info("Main")
 	if config.CpuProfile != "" {
 		stopIt := utils.StartCPUProfile(config.CpuProfile)
 		defer stopIt()
