@@ -3,6 +3,7 @@ build:
 	go build -o reddit_stats ./src/cmd/analyze
 	go build -o reddit_filter ./src/cmd/filter
 	go build -o full_analyze ./src/cmd/top
+	go build -o profile_users ./src/cmd/profiles
 
 .PHONY: buildt
 buildt:
@@ -14,14 +15,17 @@ test:
 	go test ./src/cmd/analyze -coverprofile=./coverage/cmd_analyze.out
 	go test ./src/cmd/top -coverprofile=./coverage/cmd_top.out
 	go test ./src/cmd/filter -coverprofile=./coverage/cmd_filter.out
+	go test ./src/cmd/profiles -coverprofile=./coverage/cmd_profiles.out
 	go test ./src/analysis/ -coverprofile=./coverage/analysis.out
 	go test ./src/utils/ -coverprofile=./coverage/utils.out
+
 
 ifeq (showcoverage,$(firstword $(MAKECMDGOALS)))
   RUN_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
   $(eval $(RUN_ARGS):;@:)
 endif
 
+# Show the coverage for a ceratin output file
 .PHONY: showcoverage
 showcoverage:
 	go tool cover -html=./coverage/$(RUN_ARGS).out
