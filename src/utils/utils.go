@@ -213,6 +213,7 @@ func LoadConfigurationFromFile(inFile string) data_types.StatsConfiguration {
 }
 
 func MakeRedditMap(items []string) map[string]bool {
+	/* TODO: Rename this "MakeExistenceMap" */
 	retVals := make(map[string]bool)
 	for _, val := range items {
 		retVals[strings.ToLower(val)] = true
