@@ -23,6 +23,10 @@ type AnalysisSettings struct {
 	TargetConfig           TargetSettings    `json:"target"`
 }
 
+type ProfileSettings struct {
+	UserListFile string `json:"list_file"`
+}
+
 type StatsConfiguration struct {
 	DataSource               string              `json:"data_source"`
 	CheckInterval            int                 `json:"check_interval"`
@@ -31,4 +35,5 @@ type StatsConfiguration struct {
 	FilterConfiguration      FilterSettings      `json:"filter_settings",omitempty`
 	InputFilterConfiguration InputFilterSettings `json:"input_filter_settings",omitempty`
 	AnalysisConfiguration    AnalysisSettings    `json:"analysis_settings"`
+	ProfileConfiguration     ProfileSettings     `json:"profile_settings"`
 }
