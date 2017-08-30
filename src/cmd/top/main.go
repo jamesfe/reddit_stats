@@ -26,10 +26,6 @@ var format = logging.MustStringFormatter(
 	`%{color}%{time:15:04:05.000} %{shortfunc} ▶ %{level:.8s} %{id:03x}%{color:reset} %{message}`,
 )
 
-type JSONList struct {
-	Items []string `json:"items"`
-}
-
 func main() {
 	rand.Seed(time.Now().UTC().UnixNano())
 
@@ -42,7 +38,7 @@ func main() {
 		defer stopIt()
 	}
 
-	var targetReddits JSONList
+	var targetReddits data_types.JSONList
 	utils.ReadJsonFile(config.FilterConfiguration.SubredditListFile, &targetReddits)
 	rmap := utils.MakeRedditMap(targetReddits.Items)
 

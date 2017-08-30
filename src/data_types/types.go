@@ -65,8 +65,15 @@ type TimePeriod struct {
 	EndDate   string `json:"end_date"`
 }
 
+/*
+For Later Use
 type AuthorProfile struct {
 	// MinDate            int            `json:"first_post_timestamp"`
 	// MaxDate            int            `json:"last_post_timestamp"`
 	CommentCountsBySub map[string]int `json:"comments_per_sub"`
+}
+*/
+
+type JSONList struct {
+	Items []string `json:"items"`
 }
