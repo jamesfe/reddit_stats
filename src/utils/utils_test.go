@@ -76,10 +76,10 @@ func TestIsEligibleFile(t *testing.T) {
 	}
 }
 
-func TestMakeRedditMap(t *testing.T) {
+func TestMakeExistenceMap(t *testing.T) {
 	/* Test that it turns a list into a dict of trues */
 	items := []string{"a", "b", "c"}
-	testMap := MakeRedditMap(items)
+	testMap := MakeExistenceMap(items)
 	for a := range items {
 		if !testMap[items[a]] {
 			t.Errorf("Did not receive a true value for %s", items[a])

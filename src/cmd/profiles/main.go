@@ -77,7 +77,7 @@ func init() {
 	var userList data_types.JSONList
 	utils.ReadJsonFile(config.ProfileConfiguration.UserListFile, &userList)
 	/* This should never change after this. */
-	targetUsers = utils.MakeRedditMap(userList.Items)
+	targetUsers = utils.MakeExistenceMap(userList.Items)
 
 	/* We initialize our aggregation variable to be a map of all the known users with an empty
 	   subreddit->count map inside */

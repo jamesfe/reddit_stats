@@ -40,7 +40,7 @@ func main() {
 
 	var targetReddits data_types.JSONList
 	utils.ReadJsonFile(config.FilterConfiguration.SubredditListFile, &targetReddits)
-	rmap := utils.MakeRedditMap(targetReddits.Items)
+	rmap := utils.MakeExistenceMap(targetReddits.Items)
 
 	var delim byte = '\n'
 	filesToCheck := utils.GetFilesToCheck(config.DataSource)
