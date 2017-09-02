@@ -34,7 +34,7 @@ func main() {
 	for _, file := range filesToCheck {
 		log.Debugf("Reading %s", file)
 		inFileReader, closeInFileReader := utils.GetFileReader(file)
-		outFileWriter, closeOutFileWriter := utils.GetBufioFileWriter(file, config.InputFilterConfiguration.OutputDirectory, "")
+		outFileWriter, closeOutFileWriter := utils.GetBufioFileWriter(file, config.InputFilterConfiguration.OutputDirectory, "json")
 		defer closeOutFileWriter()
 		defer closeInFileReader()
 	lineloop:

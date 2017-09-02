@@ -66,9 +66,9 @@ bigtestmulti:
 bigtest:
 	time ./reddit_stats --config ./configs/big.json
 
-.PHONY: smfilter
-smfilter:
-	time ./reddit_filter --filename ~/PersCode/reddit_donald/data/RC_2017-03.gz --cv 1000 --maxlines 10000 --output ./filters/
+.PHONY: medfilter
+medfilter:
+	time ./reddit_filter --config ./configs/medium.json
 
 .PHONY: filterall
 filterall:
