@@ -3,6 +3,9 @@ package main
 /*
 	Here we define a command that will create a profile of users and allow us to perform some person-by-person
 	analysis of users of the various reddits.
+
+	We require a list of users who have posted to /r/the_donald and a list of sub-reddits we are interested in
+	using as features in our machine learning model.
 */
 
 import (
@@ -32,9 +35,18 @@ func analysisFunction(line []byte) {
 	}
 }
 
-func readFilesAndReturnAnalysis(analysisFunc func(line []byte)) {
+var donaldUserList map[string]bool
+
+func addUserToMap(line []byte) {
+	var resultItem data_types.AuthorDateSubTuple
+	if analysis.AuthorSingleLineMultiNoFilter(line, &resultItem) {
+		donaldUserList[resultItem.AuthorName] = true
+	}
+}
+
+func readFilesAndReturnAnalysis(analysisFunc func(line []byte), inDir string) {
 	var delim byte = '\n'
-	filesToCheck := utils.GetFilesToCheck(config.DataSource)
+	filesToCheck := utils.GetFilesToCheck(inDir)
 	var lines int = 0
 
 	log.Infof("Entering analysis loop.")
@@ -85,6 +97,9 @@ func init() {
 	for _, element := range userList.Items {
 		aggregateCounts[element] = make(map[string]int)
 	}
+
+	// Initialize the user list so we know which users we have seen before.
+	donaldUserList = make(map[string]bool)
 	log.Info("Done Initializing")
 }
 
@@ -95,7 +110,18 @@ func main() {
 		defer stopIt()
 	}
 
-	readFilesAndReturnAnalysis(analysisFunction)
+	// readFilesAndReturnAnalysis(analysisFunction)
+
+	// Aggregate and dump the user list
+	readFilesAndReturnAnalysis(addUserToMap, config.ProfileConfiguration.FilteredDataSource)
+	var users []string
+	for key, _ := range donaldUserList {
+		users = append(users, key)
+	}
+	var outputUsers data_types.JSONList
+	outputUsers.Items = users
+
+	utils.DumpJSONToFile("userlist", outputUsers)
 
 	if config.AnalysisConfiguration.AnalysisMap["deleted"] {
 		utils.DumpJSONToFile("user_comments_by_subreddit", aggregateCounts)
