@@ -92,6 +92,7 @@ func init() {
 	utils.ReadJsonFile(config.ProfileConfiguration.UserListFile, &userList)
 	/* This should never change after this. */
 	targetUsers = utils.MakeExistenceMap(userList.Items)
+	log.Infof("We are going to search for %d users.", len(userList.Items))
 
 	/* We initialize our aggregation variable to be a map of all the known users with an empty
 	   subreddit->count map inside */
@@ -101,6 +102,7 @@ func init() {
 	}
 
 	// Initialize the user list so we know which users we have seen before.
+	// So we can store the users we see in it
 	donaldUserList = make(map[string]bool)
 	log.Info("Done Initializing")
 }
@@ -112,10 +114,10 @@ func main() {
 	}
 
 	buildUserProfiles := true
-	findTargetUser := false
+	findTargetUsers := false
 
 	if buildUserProfiles {
-		log.info("Building user profiles.")
+		log.Info("Building user profiles.")
 		/* Read the list of usernames and build some user profiles. */
 		readFilesAndReturnAnalysis(analysisFunction, config.DataSource)
 		// This last function is going to modify the `aggregateCounts` variable
@@ -124,7 +126,7 @@ func main() {
 
 	if findTargetUsers {
 		/* This section is for getting usernames. */
-		log.info("Finding users of the target reddit.")
+		log.Info("Finding users of the target reddit.")
 		readFilesAndReturnAnalysis(addUserToMap, config.ProfileConfiguration.FilteredDataSource)
 		var users []string
 		for key, _ := range donaldUserList {

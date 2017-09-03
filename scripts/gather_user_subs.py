@@ -33,12 +33,7 @@ def just_get_author(line):
 
 
 def for_every_file_exec(datadir, func):
-    i = 0
     for item in os.listdir(datadir):
-        i += 1
-        if i > 2:
-            print('Dropping out of file loop')
-            break
         if item.lower()[-2:] == 'gz':
             print(item)
             with open(os.path.join(datadir, item), 'r') as k:
@@ -51,11 +46,11 @@ def main():
 
     filtered_dir = '/Users/jferrara/PersCode/reddit_stats/filters/old'
     print('Looping')
-    for_every_file_exec(filtered_dir, author_func)
+    for_every_file_exec(filtered_dir, just_get_author)
     print('Done with file IO')
 
     print('Logging')
-    with open('./the_donald_users_2.json', 'w') as outfile:
+    with open('./the_donald_users_3.json', 'w') as outfile:
         json.dump(list(authors), outfile, sort_keys=True, indent=3, separators=(',', ':'))
     print('Done logging')
     # with open('./the_donald_sub_count.json', 'w') as outfile:
