@@ -25,7 +25,10 @@ type AnalysisSettings struct {
 }
 
 type ProfileSettings struct {
-	UserListFile string `json:"list_file"`
+	UserListFile string `json:"target_user_list_file"`
+	// A file containing all the users we are interested in.
+	FilteredDataSource string `json:"filtered_data_source"`
+	// A data source for filtered data only, used to find all the usernames we will be studying.
 }
 
 type StatsConfiguration struct {

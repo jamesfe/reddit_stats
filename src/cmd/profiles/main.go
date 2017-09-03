@@ -3,6 +3,9 @@ package main
 /*
 	Here we define a command that will create a profile of users and allow us to perform some person-by-person
 	analysis of users of the various reddits.
+
+	We require a list of users who have posted to /r/the_donald and a list of sub-reddits we are interested in
+	using as features in our machine learning model.
 */
 
 import (
@@ -23,6 +26,7 @@ var format = logging.MustStringFormatter(
 type SubredditIntMap map[string]int
 
 func analysisFunction(line []byte) {
+	/* For each line, if they are an author we care about, add 1 an item in their map of subs */
 	var resultItem data_types.AuthorDateSubTuple
 	if analysis.AuthorSingleLineMultiNoFilter(line, &resultItem) {
 		// We depend on golang initializing the int to it's "zero" value.
@@ -32,9 +36,19 @@ func analysisFunction(line []byte) {
 	}
 }
 
-func readFilesAndReturnAnalysis(analysisFunc func(line []byte)) {
+var donaldUserList map[string]bool
+
+func addUserToMap(line []byte) {
+	/* Add the users who post to the target sub to a map to be exported later. */
+	var resultItem data_types.AuthorDateSubTuple
+	if analysis.AuthorSingleLineMultiNoFilter(line, &resultItem) {
+		donaldUserList[resultItem.AuthorName] = true
+	}
+}
+
+func readFilesAndReturnAnalysis(analysisFunc func(line []byte), inDir string) {
 	var delim byte = '\n'
-	filesToCheck := utils.GetFilesToCheck(config.DataSource)
+	filesToCheck := utils.GetFilesToCheck(inDir)
 	var lines int = 0
 
 	log.Infof("Entering analysis loop.")
@@ -78,6 +92,7 @@ func init() {
 	utils.ReadJsonFile(config.ProfileConfiguration.UserListFile, &userList)
 	/* This should never change after this. */
 	targetUsers = utils.MakeExistenceMap(userList.Items)
+	log.Infof("We are going to search for %d users.", len(userList.Items))
 
 	/* We initialize our aggregation variable to be a map of all the known users with an empty
 	   subreddit->count map inside */
@@ -85,19 +100,43 @@ func init() {
 	for _, element := range userList.Items {
 		aggregateCounts[element] = make(map[string]int)
 	}
+
+	// Initialize the user list so we know which users we have seen before.
+	// So we can store the users we see in it
+	donaldUserList = make(map[string]bool)
 	log.Info("Done Initializing")
 }
 
 func main() {
-	log.Info("Main")
 	if config.CpuProfile != "" {
 		stopIt := utils.StartCPUProfile(config.CpuProfile)
 		defer stopIt()
 	}
 
-	readFilesAndReturnAnalysis(analysisFunction)
+	buildUserProfiles := true
+	findTargetUsers := false
 
-	if config.AnalysisConfiguration.AnalysisMap["deleted"] {
+	if buildUserProfiles {
+		log.Info("Building user profiles.")
+		/* Read the list of usernames and build some user profiles. */
+		readFilesAndReturnAnalysis(analysisFunction, config.DataSource)
+		// This last function is going to modify the `aggregateCounts` variable
 		utils.DumpJSONToFile("user_comments_by_subreddit", aggregateCounts)
 	}
+
+	if findTargetUsers {
+		/* This section is for getting usernames. */
+		log.Info("Finding users of the target reddit.")
+		readFilesAndReturnAnalysis(addUserToMap, config.ProfileConfiguration.FilteredDataSource)
+		var users []string
+		for key, _ := range donaldUserList {
+			users = append(users, key)
+		}
+		var outputUsers data_types.JSONList
+		outputUsers.Items = users
+
+		utils.DumpJSONToFile("userlist", outputUsers)
+		/* This ends the get-username section. */
+	}
+
 }

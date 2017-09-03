@@ -65,12 +65,12 @@ func TestIsEligibleFile(t *testing.T) {
 	true_strings := []string{"blah.gz", "blah.GZ", "thing.gz.json", "blah.JSON"}
 	false_strings := []string{"this.zip", "this.jsogz", "thisjsonzip", "blah"}
 	for b := range false_strings {
-		if isEligibleFile(false_strings[b]) {
+		if isEligibleFilename(false_strings[b]) {
 			t.Errorf("Expected false for %s", false_strings[b])
 		}
 	}
 	for b := range true_strings {
-		if !isEligibleFile(true_strings[b]) {
+		if !isEligibleFilename(true_strings[b]) {
 			t.Errorf("Expected false for %s", true_strings[b])
 		}
 	}
