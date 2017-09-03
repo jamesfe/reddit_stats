@@ -26,6 +26,7 @@ var format = logging.MustStringFormatter(
 type SubredditIntMap map[string]int
 
 func analysisFunction(line []byte) {
+	/* For each line, if they are an author we care about, add 1 an item in their map of subs */
 	var resultItem data_types.AuthorDateSubTuple
 	if analysis.AuthorSingleLineMultiNoFilter(line, &resultItem) {
 		// We depend on golang initializing the int to it's "zero" value.
@@ -38,6 +39,7 @@ func analysisFunction(line []byte) {
 var donaldUserList map[string]bool
 
 func addUserToMap(line []byte) {
+	/* Add the users who post to the target sub to a map to be exported later. */
 	var resultItem data_types.AuthorDateSubTuple
 	if analysis.AuthorSingleLineMultiNoFilter(line, &resultItem) {
 		donaldUserList[resultItem.AuthorName] = true
@@ -104,26 +106,35 @@ func init() {
 }
 
 func main() {
-	log.Info("Main")
 	if config.CpuProfile != "" {
 		stopIt := utils.StartCPUProfile(config.CpuProfile)
 		defer stopIt()
 	}
 
-	// readFilesAndReturnAnalysis(analysisFunction)
+	buildUserProfiles := true
+	findTargetUser := false
 
-	// Aggregate and dump the user list
-	readFilesAndReturnAnalysis(addUserToMap, config.ProfileConfiguration.FilteredDataSource)
-	var users []string
-	for key, _ := range donaldUserList {
-		users = append(users, key)
-	}
-	var outputUsers data_types.JSONList
-	outputUsers.Items = users
-
-	utils.DumpJSONToFile("userlist", outputUsers)
-
-	if config.AnalysisConfiguration.AnalysisMap["deleted"] {
+	if buildUserProfiles {
+		log.info("Building user profiles.")
+		/* Read the list of usernames and build some user profiles. */
+		readFilesAndReturnAnalysis(analysisFunction, config.DataSource)
+		// This last function is going to modify the `aggregateCounts` variable
 		utils.DumpJSONToFile("user_comments_by_subreddit", aggregateCounts)
 	}
+
+	if findTargetUsers {
+		/* This section is for getting usernames. */
+		log.info("Finding users of the target reddit.")
+		readFilesAndReturnAnalysis(addUserToMap, config.ProfileConfiguration.FilteredDataSource)
+		var users []string
+		for key, _ := range donaldUserList {
+			users = append(users, key)
+		}
+		var outputUsers data_types.JSONList
+		outputUsers.Items = users
+
+		utils.DumpJSONToFile("userlist", outputUsers)
+		/* This ends the get-username section. */
+	}
+
 }
