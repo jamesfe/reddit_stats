@@ -159,7 +159,8 @@ func GetFileReader(filename string) (*bufio.Reader, func() error) {
 	}
 }
 
-func isEligibleFile(f string) bool {
+func isEligibleFilename(f string) bool {
+	/* Return true if we care about this filename, false if not. */
 	f = strings.ToLower(f)
 	if strings.HasSuffix(f, ".gz") || strings.HasSuffix(f, ".json") {
 		return true
@@ -167,6 +168,7 @@ func isEligibleFile(f string) bool {
 	return false
 }
 
+// TODO: Make this function take an array of strings.
 func GetFilesToCheck(inFile string) []string {
 	var filesToCheck []string
 
@@ -178,7 +180,7 @@ func GetFilesToCheck(inFile string) []string {
 		if dirErr == nil {
 			for _, file := range files {
 				fName := file.Name()
-				if isEligibleFile(fName) {
+				if isEligibleFilename(fName) {
 					filesToCheck = append(filesToCheck, path.Join(inFile, fName))
 				}
 			}
