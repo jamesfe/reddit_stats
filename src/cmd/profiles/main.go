@@ -88,6 +88,7 @@ func init() {
 	config = utils.LoadConfigurationFromFile(*configFile)
 	targetUsers = make(map[string]bool)
 
+	log.Debug("Loading target users file.")
 	var userList data_types.JSONList
 	utils.ReadJsonFile(config.ProfileConfiguration.UserListFile, &userList)
 	/* This should never change after this. */

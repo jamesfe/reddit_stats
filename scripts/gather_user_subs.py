@@ -3,7 +3,9 @@
 import json
 from collections import defaultdict
 import os
-# import gzip
+
+file_extension = 'json'
+outfilename = './test_profile_data/the_donald_users.json'
 
 weird_subs = defaultdict(int)
 with open('./the_donald_users.json', 'r') as userfile:
@@ -34,7 +36,7 @@ def just_get_author(line):
 
 def for_every_file_exec(datadir, func):
     for item in os.listdir(datadir):
-        if item.lower()[-2:] == 'gz':
+        if item.lower()[len(file_extension) * -1:] == file_extension:
             print(item)
             with open(os.path.join(datadir, item), 'r') as k:
                 for line in k:
@@ -42,19 +44,16 @@ def for_every_file_exec(datadir, func):
 
 
 def main():
-    # input_dir = '/Users/jferrara/PersCode/reddit_donald/data'
-
-    filtered_dir = '/Users/jferrara/PersCode/reddit_stats/filters/old'
+    # filtered_dir = '/Users/jferrara/PersCode/reddit_stats/filters/old'
+    filtered_dir = '/Users/jferrara/PersCode/reddit_stats/test_profile_data/'
     print('Looping')
     for_every_file_exec(filtered_dir, just_get_author)
     print('Done with file IO')
 
     print('Logging')
-    with open('./the_donald_users_3.json', 'w') as outfile:
+    with open(outfilename, 'w') as outfile:
         json.dump(list(authors), outfile, sort_keys=True, indent=3, separators=(',', ':'))
     print('Done logging')
-    # with open('./the_donald_sub_count.json', 'w') as outfile:
-    #    json.dump(weird_subs, outfile, sort_keys=True, indent=3, separators=(',', ':'))
 
 
 main()

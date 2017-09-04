@@ -38,6 +38,7 @@ func GetWeekString(input int) string {
 
 func ReadJsonFile(inFile string, jsontype interface{}) {
 	/* Read a file into an object */
+	log.Infof("%s", inFile)
 	file, e := ioutil.ReadFile(inFile)
 	if e != nil {
 		log.Debugf("File error: %v\n", e)
