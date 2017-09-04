@@ -9,6 +9,7 @@ data/
 *.swp
 *.swo
 test_data/
+test_profile_data/
 protoout/
 filters/
 *.protodata
